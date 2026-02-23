@@ -1,0 +1,22 @@
+algo to compare:
+    logistic regression
+    k-nearest neighbors (KNN)
+    decision tree
+    random forest
+    linear regression
+
+head
+    - what are machine learning algorithm.
+
+body
+    for each algorithm
+        - what is this algo
+        - what prob it solve (classification or regression)
+        - how it predict it's target
+        - pros and cons
+        - real world application
+
+conclusion
+    - what is the best algo.
+    - all of them are best in their own way.
+    - it is up to the situation to decide what algo to use.

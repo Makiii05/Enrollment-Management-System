@@ -75,9 +75,9 @@
                     <td>{{$curriculum->status}}</td>
                     <td>
                         <button class="text-green-600 hover:underline" onclick="editCurriculum({{ $curriculum->id }}, '{{ $curriculum->curriculum }}', {{ $curriculum->department_id }}, '{{ $curriculum->status }}')" >edit</button>
-                        <form action="{{ route('registrar.curriculum.delete', $curriculum->id) }}" method="POST" style="display:inline;">
+                        <form action="{{ route('registrar.curriculum.delete', $curriculum->id) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete(this, 'Are you sure you want to delete this curriculum?')">
                             @csrf
-                            <button type="submit" class="text-red-600 hover:underline" onclick="return confirm('Are you sure?')">delete</button>
+                            <button type="submit" class="text-red-600 hover:underline">delete</button>
                         </form>
                     </td>
                 </tr>
@@ -88,6 +88,7 @@
     </div>
 
     @include('partials.table-sort-search')
+    @include('partials.delete-confirm-modal')
     
     <script>
         function editCurriculum(id, curriculum, departmentId, status) {

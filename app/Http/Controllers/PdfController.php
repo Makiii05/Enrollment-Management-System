@@ -17,6 +17,8 @@ use App\Models\AssessmentHistory;
 use App\Models\AssessmentHistoryEnlistment;
 use App\Models\AssessmentHistoryFee;
 use App\Models\AssessmentHistoryStudent;
+use App\Models\Transaction;
+use App\Models\Fee;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 
@@ -261,5 +263,84 @@ class PdfController extends Controller
         $pdf = Pdf::loadView('pdf.print_student_assessment', compact('student', 'academicTerm', 'enlistments', 'fees'));
 
         return $pdf->stream('student_assessment_' . $student->student_number . '_' . date('Y-m-d') . '.pdf');
+    }
+
+    // ── Cashier PDF Methods ──────────────────────────────────────────
+    public function printDailyTransactions(Request $request)
+    {
+        $date = $request->query('date', date('Y-m-d'));
+        $cashierId = auth()->id();
+        $cashierName = auth()->user()->name;
+
+        $transactions = Transaction::with(['student', 'academicTerm', 'cashier'])
+            ->whereDate('date', $date)
+            ->where('cashier_id', $cashierId)
+            ->orderBy('created_at')
+            ->get();
+
+        $totalAmount = $transactions->sum('amount');
+
+        $pdf = Pdf::loadView('pdf.daily_transactions', compact('transactions', 'date', 'cashierName', 'totalAmount'))
+            ->setPaper('a4', 'portrait');
+        
+        return $pdf->stream('daily_transactions_' . $date . '.pdf');
+    }
+
+    public function printSalesInvoice($id)
+    {
+        $transaction = Transaction::with(['student', 'academicTerm', 'cashier'])->findOrFail($id);
+        $cashierName = $transaction->cashier->name ?? 'N/A';
+
+        $pdf = Pdf::loadView('pdf.sales_invoice', compact('transaction', 'cashierName'))
+            ->setPaper([0, 0, 288, 432], 'portrait'); // 4x6 inches (72 points per inch)
+        
+        return $pdf->stream('sales_invoice_' . $transaction->or_number . '.pdf');
+    }
+
+    // ── Fee Ledger PDF Method ────────────────────────────────────────
+    public function printFeeLedger($id)
+    {
+        // Find the fee with its relationships
+        $fee = Fee::with(['academicTerm', 'program'])->findOrFail($id);
+
+        // Get all students who have this fee through StudentFee
+        $studentFees = StudentFee::with(['student', 'student.program', 'student.level'])
+            ->where('fee_id', $id)
+            ->get();
+
+        // Check if this is a unit fee
+        $isUnitFee = strtolower($fee->description) === 'unit fee';
+        $grandTotal = 0;
+
+        // Calculate totals - for unit fees, we need to get each student's total units
+        foreach ($studentFees as $studentFee) {
+            if ($isUnitFee) {
+                // Get student's enlistments for this academic term and calculate total units
+                $totalUnits = Enlistment::where('student_id', $studentFee->student_id)
+                    ->where('academic_term_id', $fee->academic_term_id)
+                    ->with('subjectOffering.subject')
+                    ->get()
+                    ->sum(function ($enlistment) {
+                        return $enlistment->subjectOffering->subject->unit ?? 0;
+                    });
+                
+                $studentFee->total_units = $totalUnits;
+                $studentFee->calculated_amount = $totalUnits * $fee->amount;
+                $grandTotal += $studentFee->calculated_amount;
+            } else {
+                $studentFee->total_units = null;
+                $studentFee->calculated_amount = $fee->amount;
+                $grandTotal += $fee->amount;
+            }
+        }
+
+        $pdf = Pdf::loadView('pdf.print_fee_ledger', [
+            'fee' => $fee,
+            'studentFees' => $studentFees,
+            'grandTotal' => $grandTotal,
+            'isUnitFee' => $isUnitFee,
+        ]);
+        
+        return $pdf->stream('fee_ledger_' . $fee->id . '_' . date('Y-m-d') . '.pdf');
     }
 }

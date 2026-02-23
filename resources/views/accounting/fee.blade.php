@@ -65,9 +65,10 @@
                             <td class="text-end whitespace-nowrap">{{ $fee->amount }}</td>
                             <td class="whitespace-nowrap">
                                 <button class="btn btn-sm btn-ghost" onclick="edit_major_modal_{{ $fee->id }}.showModal()">Edit</button>
-                                <form action="{{ route('accounting.fee.delete', $fee->id) }}" method="POST" style="display: inline;">
+                                <a href="{{ route('accounting.fee.ledger', $fee->id) }}" class="btn btn-sm btn-ghost text-blue-600">Ledger</a>
+                                <form action="{{ route('accounting.fee.delete', $fee->id) }}" method="POST" style="display: inline;" onsubmit="return confirmDelete(this, 'Are you sure you want to delete this fee?')">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-ghost text-red-500" onclick="return confirm('Are you sure?')">Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-ghost text-red-500">Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -131,9 +132,10 @@
                             <td class="text-end whitespace-nowrap">{{ $fee->amount }}</td>
                             <td class="whitespace-nowrap">
                                 <button class="btn btn-sm btn-ghost" onclick="edit_other_modal_{{ $fee->id }}.showModal()">Edit</button>
-                                <form action="{{ route('accounting.fee.delete', $fee->id) }}" method="POST" style="display: inline;">
+                                <a href="{{ route('accounting.fee.ledger', $fee->id) }}" class="btn btn-sm btn-ghost text-blue-600">Ledger</a>
+                                <form action="{{ route('accounting.fee.delete', $fee->id) }}" method="POST" style="display: inline;" onsubmit="return confirmDelete(this, 'Are you sure you want to delete this fee?')">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-ghost text-red-500" onclick="return confirm('Are you sure?')">Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-ghost text-red-500">Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -204,9 +206,10 @@
                             <td class="text-end whitespace-nowrap">{{ $fee->amount }}</td>
                             <td class="whitespace-nowrap">
                                 <button class="btn btn-sm btn-ghost" onclick="edit_additional_modal_{{ $fee->id }}.showModal()">Edit</button>
-                                <form action="{{ route('accounting.fee.delete', $fee->id) }}" method="POST" style="display: inline;">
+                                <a href="{{ route('accounting.fee.ledger', $fee->id) }}" class="btn btn-sm btn-ghost text-blue-600">Ledger</a>
+                                <form action="{{ route('accounting.fee.delete', $fee->id) }}" method="POST" style="display: inline;" onsubmit="return confirmDelete(this, 'Are you sure you want to delete this fee?')">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-ghost text-red-500" onclick="return confirm('Are you sure?')">Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-ghost text-red-500">Delete</button>
                                 </form>
                             </td>
                         </tr>
@@ -225,6 +228,7 @@
     @endif
 
     @include('partials.table-sort-search')
+    @include('partials.delete-confirm-modal')
 
     <!-- Edit Modals for Major Fees -->
     @if(isset($major_fees))

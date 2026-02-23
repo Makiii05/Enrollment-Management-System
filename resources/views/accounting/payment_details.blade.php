@@ -34,7 +34,7 @@
                                     <td>
                                         <div class="flex gap-1">
                                             <button class="btn btn-ghost btn-xs" onclick="openEditAccountModal({{ $account->id }}, '{{ addslashes($account->description) }}')">Edit</button>
-                                            <form action="{{ route('accounting.payment_accounts.delete', $account->id) }}" method="POST" onsubmit="return confirm('Delete this payment account?')">
+                                            <form action="{{ route('accounting.payment_accounts.delete', $account->id) }}" method="POST" onsubmit="return confirmDelete(this, 'Are you sure you want to delete this payment account?')">
                                                 @csrf
                                                 <button type="submit" class="btn btn-ghost btn-xs text-red-500">Delete</button>
                                             </form>
@@ -80,7 +80,7 @@
                                     <td>
                                         <div class="flex gap-1">
                                             <button class="btn btn-ghost btn-xs" onclick="openEditTypeModal({{ $type->id }}, '{{ addslashes($type->description) }}')">Edit</button>
-                                            <form action="{{ route('accounting.payment_types.delete', $type->id) }}" method="POST" onsubmit="return confirm('Delete this payment type?')">
+                                            <form action="{{ route('accounting.payment_types.delete', $type->id) }}" method="POST" onsubmit="return confirmDelete(this, 'Are you sure you want to delete this payment type?')">
                                                 @csrf
                                                 <button type="submit" class="btn btn-ghost btn-xs text-red-500">Delete</button>
                                             </form>
@@ -175,6 +175,8 @@
         </div>
         <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
+
+    @include('partials.delete-confirm-modal')
 
     <script>
         function openEditAccountModal(id, description) {

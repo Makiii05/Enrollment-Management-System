@@ -8,7 +8,6 @@ use App\Models\AcademicTerm;
 use App\Models\StudentFee;
 use App\Models\Enlistment;
 use App\Models\Transaction;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class CashierController extends Controller
 {
@@ -174,37 +173,5 @@ class CashierController extends Controller
         $nextOrNumber = $count + 1;
         
         return response()->json(['success' => true, 'or_number' => $nextOrNumber]);
-    }
-
-    // ── PDF Generation Methods ──────────────────────────────────────
-    public function printDailyTransactions(Request $request)
-    {
-        $date = $request->query('date', date('Y-m-d'));
-        $cashierId = auth()->id();
-        $cashierName = auth()->user()->name;
-
-        $transactions = Transaction::with(['student', 'academicTerm', 'cashier'])
-            ->whereDate('date', $date)
-            ->where('cashier_id', $cashierId)
-            ->orderBy('created_at')
-            ->get();
-
-        $totalAmount = $transactions->sum('amount');
-
-        $pdf = Pdf::loadView('pdf.daily_transactions', compact('transactions', 'date', 'cashierName', 'totalAmount'))
-            ->setPaper('a4', 'portrait');
-        
-        return $pdf->stream('daily_transactions_' . $date . '.pdf');
-    }
-
-    public function printSalesInvoice($id)
-    {
-        $transaction = Transaction::with(['student', 'academicTerm', 'cashier'])->findOrFail($id);
-        $cashierName = $transaction->cashier->name ?? 'N/A';
-
-        $pdf = Pdf::loadView('pdf.sales_invoice', compact('transaction', 'cashierName'))
-            ->setPaper([0, 0, 288, 432], 'portrait'); // 4x6 inches (72 points per inch)
-        
-        return $pdf->stream('sales_invoice_' . $transaction->or_number . '.pdf');
     }
 }

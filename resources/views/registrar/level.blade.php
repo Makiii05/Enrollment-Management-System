@@ -82,9 +82,9 @@
                     <td>{{ $level->order }}</td>
                     <td>
                         <button class="text-green-600 hover:underline" onclick="editLevel({{ $level->id }}, '{{ $level->code }}', '{{ $level->description }}', {{ $level->program_id }}, {{ $level->order }})">edit</button>
-                        <form action="{{ route('registrar.level.delete', $level->id) }}" method="POST" style="display:inline;">
+                        <form action="{{ route('registrar.level.delete', $level->id) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete(this, 'Are you sure you want to delete this level?')">
                             @csrf
-                            <button type="submit" class="text-red-600 hover:underline" onclick="return confirm('Are you sure?')">delete</button>
+                            <button type="submit" class="text-red-600 hover:underline">delete</button>
                         </form>
                     </td>
                 </tr>
@@ -95,6 +95,7 @@
     </div>
 
     @include('partials.table-sort-search')
+    @include('partials.delete-confirm-modal')
     
     <script>
         function editLevel(id, code, description, programId, order) {

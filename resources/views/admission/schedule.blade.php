@@ -156,9 +156,9 @@
                         @endif
                         @if(in_array(auth()->user()->role, ['head']))
                         <button class="text-green-600 hover:underline" onclick="editSchedule({{ $schedule->id }}, {{ $schedule->proctor_id ?? 'null' }}, '{{ $schedule->date->format('Y-m-d') }}', '{{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }}', '{{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}', '{{ $schedule->status }}', '{{ $schedule->process }}')">edit</button>
-                        <form action="{{ route('admission.schedule.delete', $schedule->id) }}" method="POST" style="display:inline;">
+                        <form action="{{ route('admission.schedule.delete', $schedule->id) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete(this, 'Are you sure you want to delete this schedule?')">
                             @csrf
-                            <button type="submit" class="text-red-600 hover:underline" onclick="return confirm('Are you sure?')">delete</button>
+                            <button type="submit" class="text-red-600 hover:underline">delete</button>
                         </form>
                         @endif
                     </td>
@@ -170,6 +170,7 @@
     </div>
 
     @include('partials.table-sort-search')
+    @include('partials.delete-confirm-modal')
     
     <script>
         const admissionStaff = @json($admissionStaff);

@@ -129,4 +129,47 @@ class FeeController extends Controller
             'academic_term_id' => $academic_term_id,
         ])->with('success', 'Fee deleted successfully.');
     }
+
+    public function showLedger($id) {
+        // Find the fee with its relationships
+        $fee = Fee::with(['academicTerm', 'program'])->findOrFail($id);
+
+        // Get all students who have this fee through StudentFee
+        $studentFees = \App\Models\StudentFee::with(['student', 'student.program', 'student.level'])
+            ->where('fee_id', $id)
+            ->get();
+
+        // Check if this is a unit fee
+        $isUnitFee = strtolower($fee->description) === 'unit fee';
+        $grandTotal = 0;
+
+        // Calculate totals - for unit fees, we need to get each student's total units
+        foreach ($studentFees as $studentFee) {
+            if ($isUnitFee) {
+                // Get student's enlistments for this academic term and calculate total units
+                $totalUnits = \App\Models\Enlistment::where('student_id', $studentFee->student_id)
+                    ->where('academic_term_id', $fee->academic_term_id)
+                    ->with('subjectOffering.subject')
+                    ->get()
+                    ->sum(function ($enlistment) {
+                        return $enlistment->subjectOffering->subject->unit ?? 0;
+                    });
+                
+                $studentFee->total_units = $totalUnits;
+                $studentFee->calculated_amount = $totalUnits * $fee->amount;
+                $grandTotal += $studentFee->calculated_amount;
+            } else {
+                $studentFee->total_units = null;
+                $studentFee->calculated_amount = $fee->amount;
+                $grandTotal += $fee->amount;
+            }
+        }
+
+        return view('accounting.fee_ledger', [
+            'fee' => $fee,
+            'studentFees' => $studentFees,
+            'grandTotal' => $grandTotal,
+            'isUnitFee' => $isUnitFee,
+        ]);
+    }
 }

@@ -114,6 +114,8 @@ Route::prefix('accounting')->name('accounting.')->group(function () {
         Route::post('/fee', [FeeController::class, 'createFee'])->name('fee.create');
         Route::post('/fee/{id}/update', [FeeController::class, 'updateFee'])->name('fee.update');
         Route::post('/fee/{id}/delete', [FeeController::class, 'deleteFee'])->name('fee.delete');
+        Route::get('/fee/{id}/ledger', [FeeController::class, 'showLedger'])->name('fee.ledger');
+        Route::get('/fee/{id}/ledger/print', [PdfController::class, 'printFeeLedger'])->name('fee.ledger.print');
 
         Route::get('/api/academic-terms', [FeeController::class, 'getAcademicTermsByProgram'])->name('api.academic-terms');
 
@@ -131,8 +133,8 @@ Route::prefix('accounting')->name('accounting.')->group(function () {
         Route::get('/api/next-or-number', [CashierController::class, 'getNextOrNumber'])->name('api.next-or-number');
 
         // Print routes
-        Route::get('/print/daily-transactions', [CashierController::class, 'printDailyTransactions'])->name('print.daily-transactions');
-        Route::get('/print/sales-invoice/{id}', [CashierController::class, 'printSalesInvoice'])->name('print.sales-invoice');
+        Route::get('/print/daily-transactions', [PdfController::class, 'printDailyTransactions'])->name('print.daily-transactions');
+        Route::get('/print/sales-invoice/{id}', [PdfController::class, 'printSalesInvoice'])->name('print.sales-invoice');
 
         // Payment Details routes
         Route::get('/payment-details', [PaymentDetailsController::class, 'index'])->name('payment_details');

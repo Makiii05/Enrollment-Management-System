@@ -124,9 +124,9 @@
                     <td>{{$academicTerm->status}}</td>
                     <td>
                         <button class="text-green-600 hover:underline" onclick="editAcademicTerm({{ $academicTerm->id }}, '{{ $academicTerm->code }}', '{{ $academicTerm->description }}', '{{ $academicTerm->type }}', {{ $academicTerm->department_id }}, '{{ $academicTerm->academic_year }}', '{{ $academicTerm->start_date }}', '{{ $academicTerm->end_date }}', '{{ $academicTerm->status }}')">edit</button>
-                        <form action="{{ route('registrar.academic_term.delete', $academicTerm->id) }}" method="POST" style="display:inline;">
+                        <form action="{{ route('registrar.academic_term.delete', $academicTerm->id) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete(this, 'Are you sure you want to delete this academic term?')">
                             @csrf
-                            <button type="submit" class="text-red-600 hover:underline" onclick="return confirm('Are you sure?')">delete</button>
+                            <button type="submit" class="text-red-600 hover:underline">delete</button>
                         </form>
                     </td>
                 </tr>
@@ -137,6 +137,7 @@
     </div>
 
     @include('partials.table-sort-search')
+    @include('partials.delete-confirm-modal')
     
     <script>
         function editAcademicTerm(id, code, description, type, departmentId, academicYear, startDate, endDate, status) {

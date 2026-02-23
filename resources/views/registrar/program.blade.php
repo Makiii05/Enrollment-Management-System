@@ -84,9 +84,9 @@
                     <td>{{$program->status}}</td>
                     <td>
                         <button class="text-green-600 hover:underline" onclick="editProgram({{ $program->id }}, '{{ $program->code }}', '{{ $program->description }}', {{ $program->department_id }}, '{{ $program->status }}')">edit</button>
-                        <form action="{{ route('registrar.program.delete', $program->id) }}" method="POST" style="display:inline;">
+                        <form action="{{ route('registrar.program.delete', $program->id) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete(this, 'Are you sure you want to delete this program?')">
                             @csrf
-                            <button type="submit" class="text-red-600 hover:underline" onclick="return confirm('Are you sure?')">delete</button>
+                            <button type="submit" class="text-red-600 hover:underline">delete</button>
                         </form>
                     </td>
                 </tr>
@@ -97,6 +97,7 @@
     </div>
 
     @include('partials.table-sort-search')
+    @include('partials.delete-confirm-modal')
     
     <script>
         function editProgram(id, code, description, departmentId, status) {
