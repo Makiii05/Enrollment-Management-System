@@ -378,8 +378,8 @@
 
         function computeSchedule(grossTotal) {
             // Simple schedule: 20% down payment, 20% each for 4 months
-            const downPayment = grossTotal * 0.20;
-            const monthlyPay = grossTotal * 0.20;
+            const downPayment = grossTotal * 0.30;
+            const monthlyPay = grossTotal * 0.175;
 
             document.getElementById('schedDownPayment').textContent = formatMoney(downPayment);
             document.getElementById('sched1stMonth').textContent = formatMoney(monthlyPay);

@@ -343,4 +343,67 @@ class PdfController extends Controller
         
         return $pdf->stream('fee_ledger_' . $fee->id . '_' . date('Y-m-d') . '.pdf');
     }
+
+    /**
+     * Print the class list for a specific subject offering.
+     */
+    public function printClassList($id)
+    {
+        $subjectOffering = SubjectOffering::with(['subject', 'program', 'program.levels', 'academicTerm'])
+            ->findOrFail($id);
+
+        // Get all enlistments for this subject offering with student info
+        $enlistments = Enlistment::where('subject_offering_id', $id)
+            ->with(['student', 'student.level', 'student.program'])
+            ->get();
+
+        // Separate students by sex
+        $femaleStudents = $enlistments->filter(function ($enlistment) {
+            return strtolower($enlistment->student->sex ?? '') === 'female';
+        })->sortBy(function ($enlistment) {
+            return $enlistment->student->last_name . $enlistment->student->first_name;
+        });
+
+        $maleStudents = $enlistments->filter(function ($enlistment) {
+            return strtolower($enlistment->student->sex ?? '') === 'male';
+        })->sortBy(function ($enlistment) {
+            return $enlistment->student->last_name . $enlistment->student->first_name;
+        });
+
+        // Add OR numbers
+        $femaleStudents = $this->addOrNumberToStudents($femaleStudents);
+        $maleStudents = $this->addOrNumberToStudents($maleStudents);
+
+        $hasTuitionFees = $femaleStudents->contains(fn($e) => $e->or_number !== null) ||
+                          $maleStudents->contains(fn($e) => $e->or_number !== null);
+
+        $yearLevel = $subjectOffering->program?->levels?->first()?->description ?? 'N/A';
+
+        $pdf = Pdf::loadView('pdf.classlist', [
+            'subjectOffering' => $subjectOffering,
+            'femaleStudents' => $femaleStudents,
+            'maleStudents' => $maleStudents,
+            'hasTuitionFees' => $hasTuitionFees,
+            'yearLevel' => $yearLevel,
+        ]);
+
+        return $pdf->stream('classlist_' . $subjectOffering->code . '.pdf');
+    }
+
+    /**
+     * Add OR number column to students who have tuition fee transactions.
+     */
+    private function addOrNumberToStudents($students)
+    {
+        return $students->map(function ($enlistment) {
+            $latestTuitionTransaction = Transaction::where('student_id', $enlistment->student->id)
+                ->where('type', 'tuition fee')
+                ->orderBy('date', 'desc')
+                ->orderBy('id', 'desc')
+                ->first();
+
+            $enlistment->or_number = $latestTuitionTransaction?->or_number;
+            return $enlistment;
+        });
+    }
 }

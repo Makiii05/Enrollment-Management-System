@@ -26,6 +26,7 @@ use App\Http\Controllers\PdfController;
 use App\Http\Controllers\RegistrarStudentController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\PaymentDetailsController;
+use App\Http\Controllers\ClassListController;
 
 Route::get('/', function () {return view('index');})->name('index');
 
@@ -99,6 +100,11 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
         Route::get('/api/levels-by-department/{departmentId}', [ProspectusController::class, 'getLevelsByDepartment'])->name('api.levels');
         Route::get('/api/curricula-by-department/{departmentId}', [ProspectusController::class, 'getCurriculaByDepartment'])->name('api.curricula');
         Route::get('/api/prospectuses', [ProspectusController::class, 'getProspectusesApi'])->name('api.prospectuses');
+
+        // Class List routes
+        Route::get('/classlist', [ClassListController::class, 'showClassList'])->name('classlist');
+        Route::get('/classlist/{id}/enrolled', [ClassListController::class, 'showEnrolledStudents'])->name('classlist.enrolled');
+        Route::get('/classlist/{id}/print', [PdfController::class, 'printClassList'])->name('classlist.print');
     });
 });
 
