@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\SubjectOffering;
 use App\Models\Enlistment;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\DB;
 
 class ClassListController extends Controller
 {
@@ -15,11 +16,15 @@ class ClassListController extends Controller
     public function showClassList(Request $request)
     {
         $search = $request->query('search', '');
-        $sortBy = $request->query('sort_by', 'description');
+        $sortBy = $request->query('sort_by', 'code');
         $sortDir = $request->query('sort_dir', 'asc');
 
-        $query = SubjectOffering::with(['subject', 'program', 'program.levels'])
-            ->withCount('enlistments');
+        $query = SubjectOffering::with(['subject', 'program', 'level'])
+            ->addSelect([
+                'subject_offerings.*',
+                'enrolled_count' => Enlistment::selectRaw('count(*)')
+                    ->whereColumn('enlistments.subject_offering_id', 'subject_offerings.id')
+            ]);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -30,21 +35,48 @@ class ClassListController extends Controller
                 ->orWhereHas('program', function ($progQ) use ($search) {
                     $progQ->where('code', 'like', "%{$search}%")
                         ->orWhere('description', 'like', "%{$search}%");
+                })
+                ->orWhereHas('level', function ($levelQ) use ($search) {
+                    $levelQ->where('description', 'like', "%{$search}%");
                 });
             });
         }
 
         // Handle sorting
-        if ($sortBy === 'description') {
+        if ($sortBy === 'code') {
+            $query->join('subjects', 'subject_offerings.subject_id', '=', 'subjects.id')
+                  ->orderBy('subjects.code', $sortDir)
+                  ->select(['subject_offerings.*'])
+                  ->addSelect([
+                      'enrolled_count' => Enlistment::selectRaw('count(*)')
+                          ->whereColumn('enlistments.subject_offering_id', 'subject_offerings.id')
+                  ]);
+        } elseif ($sortBy === 'description') {
             $query->join('subjects', 'subject_offerings.subject_id', '=', 'subjects.id')
                   ->orderBy('subjects.description', $sortDir)
-                  ->select('subject_offerings.*');
+                  ->select(['subject_offerings.*'])
+                  ->addSelect([
+                      'enrolled_count' => Enlistment::selectRaw('count(*)')
+                          ->whereColumn('enlistments.subject_offering_id', 'subject_offerings.id')
+                  ]);
         } elseif ($sortBy === 'program') {
             $query->join('programs', 'subject_offerings.program_id', '=', 'programs.id')
                   ->orderBy('programs.code', $sortDir)
-                  ->select('subject_offerings.*');
+                  ->select(['subject_offerings.*'])
+                  ->addSelect([
+                      'enrolled_count' => Enlistment::selectRaw('count(*)')
+                          ->whereColumn('enlistments.subject_offering_id', 'subject_offerings.id')
+                  ]);
+        } elseif ($sortBy === 'level') {
+            $query->leftJoin('levels', 'subject_offerings.level_id', '=', 'levels.id')
+                  ->orderBy('levels.order', $sortDir)
+                  ->select(['subject_offerings.*'])
+                  ->addSelect([
+                      'enrolled_count' => Enlistment::selectRaw('count(*)')
+                          ->whereColumn('enlistments.subject_offering_id', 'subject_offerings.id')
+                  ]);
         } elseif ($sortBy === 'enrolled') {
-            $query->orderBy('enlistments_count', $sortDir);
+            $query->orderBy('enrolled_count', $sortDir);
         } else {
             $query->orderBy($sortBy, $sortDir);
         }
@@ -68,7 +100,7 @@ class ClassListController extends Controller
      */
     public function showEnrolledStudents(Request $request, $id)
     {
-        $subjectOffering = SubjectOffering::with(['subject', 'program', 'program.levels'])
+        $subjectOffering = SubjectOffering::with(['subject', 'program', 'level'])
             ->findOrFail($id);
 
         // Get all enlistments for this subject offering with student info
@@ -93,7 +125,7 @@ class ClassListController extends Controller
         $femaleStudents = $this->addOrNumberToStudents($femaleStudents);
         $maleStudents = $this->addOrNumberToStudents($maleStudents);
 
-        $yearLevel = $subjectOffering->program?->levels?->first()?->description ?? 'N/A';
+        $yearLevel = $subjectOffering->level?->description ?? 'N/A';
 
         return view('registrar.classlist_enrolled', [
             'subjectOffering' => $subjectOffering,

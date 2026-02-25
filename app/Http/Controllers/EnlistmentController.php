@@ -101,19 +101,24 @@ class EnlistmentController extends Controller
         $user = auth()->user();
         $departmentId = $user->department_id;
 
-        // Get all offering codes like "BSCS-INTROCOM-A"
+        // Get all offering codes like "BSCS-INTROCOM-1A" (PROG-SUB-YearLevelLetter)
         $codes = SubjectOffering::where('academic_term_id', $academicTermId)
             ->where('department_id', $departmentId)
             ->pluck('code');
 
-        // Extract unique program-section combinations (e.g., "BSCS-A", "BSCpE-B")
+        // Extract unique program-level-section combinations (e.g., "BSCS-1A", "BSCpE-2B")
         $sections = $codes->map(function ($code) {
             $parts = explode('-', $code);
-            if (count($parts) >= 2) {
+            if (count($parts) >= 3) {
                 $program = $parts[0];
-                $sectionLetter = end($parts);
-                if (strlen($sectionLetter) === 1 && ctype_alpha($sectionLetter)) {
-                    return $program . '-' . strtoupper($sectionLetter);
+                $sectionPart = end($parts); // e.g., "1A" or "2B"
+                // Extract level number and letter (e.g., "1A" -> level=1, letter=A)
+                if (preg_match('/^(\d+)([A-Z])$/i', $sectionPart, $matches)) {
+                    return $program . '-' . strtoupper($sectionPart);
+                }
+                // Fallback for old format without level number
+                if (strlen($sectionPart) === 1 && ctype_alpha($sectionPart)) {
+                    return $program . '-' . strtoupper($sectionPart);
                 }
             }
             return null;

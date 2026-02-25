@@ -21,8 +21,20 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('registrar/*')) {
                 return route('registrar.login');
             }
+            // Check if the request is for admission routes
+            if ($request->is('admission/*')) {
+                return route('admission.login');
+            }
+            // Check if the request is for department routes
+            if ($request->is('department/*')) {
+                return route('department.login');
+            }
+            // Check if the request is for admin routes
+            if ($request->is('admin/*')) {
+                return route('admin.login');
+            }
             // Default redirect
-            return route('registrar.login');
+            return route('index');
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {

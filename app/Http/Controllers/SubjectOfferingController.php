@@ -33,7 +33,7 @@ class SubjectOfferingController extends Controller
         if ($academicTerm) {
             $subjectOfferings = SubjectOffering::where('academic_term_id', $academicTerm->id)
                 ->where('department_id', $departmentId)
-                ->with('subject')
+                ->with(['subject', 'level', 'enlistments'])
                 ->get();
         }
 
@@ -82,7 +82,7 @@ class SubjectOfferingController extends Controller
         if ($academicTerm) {
             $subjectOfferings = SubjectOffering::where('academic_term_id', $academicTerm->id)
                 ->where('department_id', $departmentId)
-                ->with('subject')
+                ->with(['subject', 'level', 'enlistments'])
                 ->get();
         }
 
@@ -129,30 +129,44 @@ class SubjectOfferingController extends Controller
             'academic_term_id' => 'required|exists:academic_terms,id',
             'subject_id' => 'required|exists:subjects,id',
             'program_id' => 'required|exists:programs,id',
+            'level_id' => 'nullable|exists:levels,id',
         ]);
 
         $subject = Subject::findOrFail($validated['subject_id']);
         $program = Program::findOrFail($validated['program_id']);
+        $level = isset($validated['level_id']) ? Level::find($validated['level_id']) : null;
 
-        // Count existing offerings for this academic term, department, subject, AND program
-        $count = SubjectOffering::where('academic_term_id', $validated['academic_term_id'])
+        // Count existing offerings for this academic term, department, subject, program, AND level
+        $countQuery = SubjectOffering::where('academic_term_id', $validated['academic_term_id'])
             ->where('department_id', $departmentId)
             ->where('subject_id', $validated['subject_id'])
-            ->where('program_id', $validated['program_id'])
-            ->count();
+            ->where('program_id', $validated['program_id']);
+        
+        if ($level) {
+            $countQuery->where('level_id', $validated['level_id']);
+        } else {
+            $countQuery->whereNull('level_id');
+        }
+        
+        $count = $countQuery->count();
 
         $sectionLetter = chr(65 + $count); // 0 → A, 1 → B, 2 → C, ...
+        
+        // Build code: PROG-SUB-YearLevelA (e.g., BSCS-INTROCOM-1A)
+        $levelOrder = $level ? $level->order : '';
+        $code = $program->code . '-' . $subject->code . '-' . $levelOrder . $sectionLetter;
 
         $subjectOffering = SubjectOffering::create([
             'academic_term_id' => $validated['academic_term_id'],
             'department_id' => $departmentId,
             'subject_id' => $validated['subject_id'],
             'program_id' => $validated['program_id'],
-            'code' => $program->code . '-' . $subject->code . '-' . $sectionLetter,
+            'level_id' => $validated['level_id'] ?? null,
+            'code' => $code,
             'description' => $subject->description,
         ]);
 
-        $subjectOffering->load('subject');
+        $subjectOffering->load(['subject', 'level']);
 
         return response()->json($subjectOffering, 201);
     }
@@ -188,5 +202,14 @@ class SubjectOfferingController extends Controller
             ->get();
 
         return response()->json($curricula);
+    }
+
+    public function getLevelsByProgram($programId)
+    {
+        $levels = Level::where('program_id', $programId)
+            ->orderBy('order')
+            ->get(['id', 'code', 'description', 'order']);
+
+        return response()->json($levels);
     }
 }

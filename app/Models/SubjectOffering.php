@@ -13,6 +13,7 @@ class SubjectOffering extends Model
         'subject_id',
         'department_id',
         'program_id',
+        'level_id',
         'code',
         'description',
         'class_size',
@@ -36,6 +37,11 @@ class SubjectOffering extends Model
     public function program(): BelongsTo
     {
         return $this->belongsTo(Program::class);
+    }
+
+    public function level(): BelongsTo
+    {
+        return $this->belongsTo(Level::class);
     }
 
     public function enlistments(): HasMany

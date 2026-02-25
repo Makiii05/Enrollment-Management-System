@@ -68,7 +68,7 @@
                                         <tbody>
                                             @foreach ($groupedByLevel as $prospectus)
                                             <tr class="cursor-pointer hover:bg-blue-50 transition-colors duration-150"
-                                                onclick="addOfferingWithProgram({{ $prospectus->subject->id }}, {{ $level->program->id }})">
+                                                onclick="addOfferingWithProgramAndLevel({{ $prospectus->subject->id }}, {{ $level->program->id }}, {{ $level->id }})">
                                                 <td>{{ $prospectus->subject->code }}</td>
                                                 <td>{{ $prospectus->subject->description }}</td>
                                                 <td>{{ $prospectus->subject->unit }}</td>
@@ -165,23 +165,30 @@
 
     @include('partials.table-sort-search')
 
-    <!-- Program Selection Modal (for subject search tab - subjects without program context) -->
+    <!-- Program and Level Selection Modal (for subject search tab - subjects without program context) -->
     <dialog id="programSelectModal" class="modal">
         <div class="modal-box">
-            <h3 class="text-lg font-bold mb-4">Select Program</h3>
-            <p class="text-sm text-gray-500 mb-3">Choose the program this subject will be offered under:</p>
+            <h3 class="text-lg font-bold mb-4">Select Program and Level</h3>
+            <p class="text-sm text-gray-500 mb-3">Choose the program and level this subject will be offered under:</p>
             <input type="hidden" id="pendingSubjectId" value="" />
-            <div class="form-control">
-                <select id="programSelect" class="select select-bordered w-full" required>
+            <div class="form-control mb-3">
+                <label class="label"><span class="label-text">Program</span></label>
+                <select id="programSelect" class="select select-bordered w-full" required onchange="loadLevelsForProgram(this.value)">
                     <option value="">-- Select Program --</option>
                     @foreach ($programs as $program)
                         <option value="{{ $program->id }}">{{ $program->code }} - {{ $program->description }}</option>
                     @endforeach
                 </select>
             </div>
+            <div class="form-control mb-3">
+                <label class="label"><span class="label-text">Level (Year)</span></label>
+                <select id="levelSelect" class="select select-bordered w-full" disabled>
+                    <option value="">-- Select Program First --</option>
+                </select>
+            </div>
             <div class="modal-action">
                 <button type="button" class="btn btn-ghost" onclick="document.getElementById('programSelectModal').close();">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="confirmAddWithProgram()">Add to Offerings</button>
+                <button type="button" class="btn btn-primary" onclick="confirmAddWithProgramAndLevel()">Add to Offerings</button>
             </div>
         </div>
         <form method="dialog" class="modal-backdrop">
@@ -197,6 +204,7 @@
     const addSubjectOfferingUrl = '{{ route("department.subject_offering.add") }}';
     const removeSubjectOfferingUrl = '{{ url("/department/subject-offering") }}';
     const searchSubjectsUrl = '{{ route("department.api.subjects.search") }}';
+    const levelsByProgramUrl = '{{ url("/department/api/levels-by-program") }}';
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const academicTermId = {{ isset($academicTerm) ? $academicTerm->id : 'null' }};
     const departmentId = {{ $departmentId ?? 'null' }};
@@ -221,16 +229,16 @@
         }
     }
 
-    // For prospectus rows — program is already known from the level
-    function addOfferingWithProgram(subjectId, programId) {
+    // For prospectus rows — program and level are already known
+    function addOfferingWithProgramAndLevel(subjectId, programId, levelId) {
         if (!academicTermId) {
             alert('No academic term selected.');
             return;
         }
-        submitAddOffering(subjectId, programId);
+        submitAddOffering(subjectId, programId, levelId);
     }
 
-    // For subject search rows — need to pick a program first
+    // For subject search rows — need to pick a program and level first
     function openProgramModal(subjectId) {
         if (!academicTermId) {
             alert('No academic term selected.');
@@ -238,34 +246,79 @@
         }
         document.getElementById('pendingSubjectId').value = subjectId;
         document.getElementById('programSelect').value = '';
+        document.getElementById('levelSelect').innerHTML = '<option value="">-- Select Program First --</option>';
+        document.getElementById('levelSelect').disabled = true;
         document.getElementById('programSelectModal').showModal();
     }
 
-    function confirmAddWithProgram() {
+    // Load levels when program changes
+    async function loadLevelsForProgram(programId) {
+        const levelSelect = document.getElementById('levelSelect');
+        
+        if (!programId) {
+            levelSelect.innerHTML = '<option value="">-- Select Program First --</option>';
+            levelSelect.disabled = true;
+            return;
+        }
+
+        levelSelect.innerHTML = '<option value="">Loading...</option>';
+        levelSelect.disabled = true;
+
+        try {
+            const response = await fetch(`${levelsByProgramUrl}/${programId}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const levels = await response.json();
+
+            levelSelect.innerHTML = '<option value="">-- Select Level --</option>';
+            levels.forEach(level => {
+                const option = document.createElement('option');
+                option.value = level.id;
+                option.textContent = level.description;
+                levelSelect.appendChild(option);
+            });
+            levelSelect.disabled = false;
+        } catch (error) {
+            console.error('Error loading levels:', error);
+            levelSelect.innerHTML = '<option value="">-- Error loading levels --</option>';
+            levelSelect.disabled = false;
+        }
+    }
+
+    function confirmAddWithProgramAndLevel() {
         const subjectId = document.getElementById('pendingSubjectId').value;
         const programId = document.getElementById('programSelect').value;
+        const levelId = document.getElementById('levelSelect').value;
         if (!programId) {
             alert('Please select a program.');
             return;
         }
+        if (!levelId) {
+            alert('Please select a level.');
+            return;
+        }
         document.getElementById('programSelectModal').close();
-        submitAddOffering(subjectId, programId);
+        submitAddOffering(subjectId, programId, levelId);
     }
 
     // Shared add offering function
-    async function submitAddOffering(subjectId, programId) {
+    async function submitAddOffering(subjectId, programId, levelId = null) {
         try {
+            const payload = {
+                academic_term_id: academicTermId,
+                subject_id: subjectId,
+                program_id: programId,
+            };
+            if (levelId) {
+                payload.level_id = levelId;
+            }
+
             const response = await fetch(addSubjectOfferingUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                 },
-                body: JSON.stringify({
-                    academic_term_id: academicTermId,
-                    subject_id: subjectId,
-                    program_id: programId,
-                })
+                body: JSON.stringify(payload)
             });
 
             if (response.status === 422) {

@@ -9,7 +9,7 @@
     <!-- Search Form -->
     <div class="flex justify-between items-center">
         <form action="{{ route('registrar.classlist') }}" method="GET" class="ms-auto flex gap-2">
-            <input type="text" name="search" value="{{ $search }}" placeholder="Search subject or program..." 
+            <input type="text" name="search" value="{{ $search }}" placeholder="Search subject, program, or level..." 
                    class="input input-bordered w-64">
             <button type="submit" class="btn btn-primary">Search</button>
             @if($search)
@@ -24,9 +24,20 @@
             <thead>
                 <tr>
                     <th>
+                        <a href="{{ route('registrar.classlist', ['search' => $search, 'sort_by' => 'code', 'sort_dir' => ($sortBy === 'code' && $sortDir === 'asc') ? 'desc' : 'asc']) }}" 
+                           class="flex items-center gap-1 hover:text-primary">
+                            Subject Code
+                            @if($sortBy === 'code')
+                                <span class="text-xs">{{ $sortDir === 'asc' ? '↑' : '↓' }}</span>
+                            @else
+                                <span class="text-xs opacity-40">⇅</span>
+                            @endif
+                        </a>
+                    </th>
+                    <th>
                         <a href="{{ route('registrar.classlist', ['search' => $search, 'sort_by' => 'description', 'sort_dir' => ($sortBy === 'description' && $sortDir === 'asc') ? 'desc' : 'asc']) }}" 
                            class="flex items-center gap-1 hover:text-primary">
-                            Subject Description
+                            Description
                             @if($sortBy === 'description')
                                 <span class="text-xs">{{ $sortDir === 'asc' ? '↑' : '↓' }}</span>
                             @else
@@ -45,7 +56,17 @@
                             @endif
                         </a>
                     </th>
-                    <th>Year Level</th>
+                    <th>
+                        <a href="{{ route('registrar.classlist', ['search' => $search, 'sort_by' => 'level', 'sort_dir' => ($sortBy === 'level' && $sortDir === 'asc') ? 'desc' : 'asc']) }}" 
+                           class="flex items-center gap-1 hover:text-primary">
+                            Level
+                            @if($sortBy === 'level')
+                                <span class="text-xs">{{ $sortDir === 'asc' ? '↑' : '↓' }}</span>
+                            @else
+                                <span class="text-xs opacity-40">⇅</span>
+                            @endif
+                        </a>
+                    </th>
                     <th>
                         <a href="{{ route('registrar.classlist', ['search' => $search, 'sort_by' => 'enrolled', 'sort_dir' => ($sortBy === 'enrolled' && $sortDir === 'asc') ? 'desc' : 'asc']) }}" 
                            class="flex items-center gap-1 hover:text-primary">
@@ -63,19 +84,15 @@
                 @forelse ($subjectOfferings as $offering)
                 <tr class="hover:bg-gray-100 cursor-pointer transition-colors" 
                     onclick="window.location='{{ route('registrar.classlist.enrolled', $offering->id) }}'">
-                    <td>{{ $offering->subject->description ?? 'N/A' }} ({{ $offering->code }})</td>
+                    <td>{{ $offering->subject->code ?? 'N/A' }}</td>
+                    <td>{{ $offering->subject->description ?? 'N/A' }}</td>
                     <td>{{ $offering->program->code ?? 'N/A' }}</td>
-                    <td>
-                        @php
-                            $level = $offering->program?->levels?->first();
-                        @endphp
-                        {{ $level?->description ?? 'N/A' }}
-                    </td>
-                    <td>{{ $offering->enlistments_count }}</td>
+                    <td>{{ $offering->level->description ?? 'N/A' }}</td>
+                    <td class="text-green-600 font-semibold">{{ $offering->enrolled_count }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" class="text-center text-gray-500 py-8">No subject offerings found.</td>
+                    <td colspan="5" class="text-center text-gray-500 py-8">No subject offerings found.</td>
                 </tr>
                 @endforelse
             </tbody>

@@ -235,6 +235,7 @@ Route::prefix('department')->name('department.')->group(function () {
         Route::get('/api/curricula-by-department/{departmentId}', [SubjectOfferingController::class, 'getCurriculaByDepartment'])->name('api.curricula');
         Route::get('/api/subject-offering/{academicTermId}/{departmentId}', [SubjectOfferingController::class, 'getSubjectOffering'])->name('api.subject_offering');
         Route::get('/api/subjects/search', [SubjectOfferingController::class, 'searchSubjects'])->name('api.subjects.search');
+        Route::get('/api/levels-by-program/{programId}', [SubjectOfferingController::class, 'getLevelsByProgram'])->name('api.levels.by-program');
     });
 });
 
