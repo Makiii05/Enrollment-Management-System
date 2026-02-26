@@ -95,8 +95,8 @@
                     <td>{{ $t->student->student_number ?? '-' }}</td>
                     <td>{{ $t->student ? $t->student->last_name . ', ' . $t->student->first_name : '-' }}</td>
                     <td>{{ $t->academicTerm->description ?? '-' }}</td>
-                    <td>{{ $t->type }}</td>
-                    <td>{{ $t->description }}</td>
+                    <td>{{ $t->paymentType->description ?? '-' }}</td>
+                    <td>{{ $t->paymentAccount->description ?? '-' }}</td>
                     <td class="text-end">{{ number_format($t->amount, 2) }}</td>
                 </tr>
             @empty

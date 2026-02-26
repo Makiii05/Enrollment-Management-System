@@ -141,8 +141,11 @@ class ClassListController extends Controller
     private function addOrNumberToStudents($students)
     {
         return $students->map(function ($enlistment) {
-            $latestTuitionTransaction = Transaction::where('student_id', $enlistment->student->id)
-                ->where('type', 'tuition fee')
+            $latestTuitionTransaction = Transaction::with('paymentType')
+                ->where('student_id', $enlistment->student->id)
+                ->whereHas('paymentType', function ($query) {
+                    $query->where('description', 'like', '%tuition%');
+                })
                 ->orderBy('date', 'desc')
                 ->orderBy('id', 'desc')
                 ->first();

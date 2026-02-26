@@ -25,7 +25,7 @@
                         <label class="label">
                             <span class="label-text">Email address</span>
                         </label>
-                        <input autofocus name="email" type="email" placeholder="you@example.com" class="input input-bordered w-full" required/>
+                        <input autofocus name="email" type="email" placeholder="you@example.com" class="input input-bordered w-full" required value="{{ old('email') }}"/>
                     </div>
                     <div class="form-control">
                         <label class="label">

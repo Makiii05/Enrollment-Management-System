@@ -272,7 +272,7 @@ class PdfController extends Controller
         $cashierId = auth()->id();
         $cashierName = auth()->user()->name;
 
-        $transactions = Transaction::with(['student', 'academicTerm', 'cashier'])
+        $transactions = Transaction::with(['student', 'academicTerm', 'cashier', 'paymentAccount', 'paymentType'])
             ->whereDate('date', $date)
             ->where('cashier_id', $cashierId)
             ->orderBy('created_at')
@@ -288,7 +288,7 @@ class PdfController extends Controller
 
     public function printSalesInvoice($id)
     {
-        $transaction = Transaction::with(['student', 'academicTerm', 'cashier'])->findOrFail($id);
+        $transaction = Transaction::with(['student', 'academicTerm', 'cashier', 'paymentAccount', 'paymentType'])->findOrFail($id);
         $cashierName = $transaction->cashier->name ?? 'N/A';
 
         $pdf = Pdf::loadView('pdf.sales_invoice', compact('transaction', 'cashierName'))
@@ -396,8 +396,11 @@ class PdfController extends Controller
     private function addOrNumberToStudents($students)
     {
         return $students->map(function ($enlistment) {
-            $latestTuitionTransaction = Transaction::where('student_id', $enlistment->student->id)
-                ->where('type', 'tuition fee')
+            $latestTuitionTransaction = Transaction::with('paymentType')
+                ->where('student_id', $enlistment->student->id)
+                ->whereHas('paymentType', function ($query) {
+                    $query->where('description', 'like', '%tuition%');
+                })
                 ->orderBy('date', 'desc')
                 ->orderBy('id', 'desc')
                 ->first();

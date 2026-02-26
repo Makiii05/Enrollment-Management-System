@@ -67,13 +67,13 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-control">
                             <label class="label"><span class="label-text">Type</span></label>
-                            <select id="transactionType" name="type" class="select select-bordered select-sm w-full" required>
+                             <select id="transactionType" name="type_id" class="select select-bordered select-sm w-full" required>
                                 <option value="">-- Select Type --</option>
                             </select>
                         </div>
                         <div class="form-control">
                             <label class="label"><span class="label-text">Description</span></label>
-                            <select id="transactionDescription" name="description" class="select select-bordered select-sm w-full" required>
+                            <select id="transactionDescription" name="description_id" class="select select-bordered select-sm w-full" required>
                                 <option value="">-- Select Description --</option>
                             </select>
                         </div>
@@ -249,7 +249,7 @@
                 
                 select.innerHTML = '<option value="">-- Select Description --</option>';
                 result.data.forEach(account => {
-                    select.innerHTML += `<option value="${account.description}">${account.description}</option>`;
+                    select.innerHTML += `<option value="${account.id}">${account.description}</option>`;
                 });
             } catch (error) {
                 console.error('Error loading payment accounts:', error);
@@ -265,7 +265,7 @@
                 
                 select.innerHTML = '<option value="">-- Select Type --</option>';
                 result.data.forEach(type => {
-                    select.innerHTML += `<option value="${type.description}">${type.description}</option>`;
+                    select.innerHTML += `<option value="${type.id}">${type.description}</option>`;
                 });
             } catch (error) {
                 console.error('Error loading payment types:', error);
@@ -421,7 +421,7 @@
                         row.innerHTML = `
                             <td>${formatDate(t.date)}</td>
                             <td>${t.or_number || '-'}</td>
-                            <td>${t.description}</td>
+                            <td>${t.payment_account?.description || '-'}</td>
                             <td class="text-end">${formatMoney(amount)}</td>
                             <td>
                                 <div class="flex gap-1">
@@ -470,8 +470,8 @@
                 student_id: studentId,
                 academic_term_id: termId,
                 or_number: document.getElementById('orNumber').value,
-                type: document.getElementById('transactionType').value,
-                description: document.getElementById('transactionDescription').value,
+                type_id: document.getElementById('transactionType').value,
+                description_id: document.getElementById('transactionDescription').value,
                 amount: document.getElementById('transactionAmount').value,
                 date: document.getElementById('transactionDate').value,
             };

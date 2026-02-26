@@ -11,9 +11,9 @@ class Transaction extends Model
         'academic_term_id',
         'cashier_id',
         'or_number',
-        'type',
+        'description_id',
+        'type_id',
         'amount',
-        'description',
         'date',
     ];
 
@@ -35,5 +35,15 @@ class Transaction extends Model
     public function cashier()
     {
         return $this->belongsTo(User::class, 'cashier_id');
+    }
+
+    public function paymentAccount()
+    {
+        return $this->belongsTo(PaymentAccount::class, 'description_id');
+    }
+
+    public function paymentType()
+    {
+        return $this->belongsTo(PaymentType::class, 'type_id');
     }
 }

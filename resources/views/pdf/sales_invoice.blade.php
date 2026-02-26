@@ -125,7 +125,7 @@
         <h3>As payment for the following:</h3>
         <table class="payment-table">
             <tr>
-                <td>{{ $transaction->description }}</td>
+                <td>{{ $transaction->paymentAccount->description ?? 'N/A' }}</td>
                 <td class="amount">{{ number_format($transaction->amount, 2) }}</td>
             </tr>
         </table>

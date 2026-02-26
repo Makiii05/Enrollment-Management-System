@@ -129,7 +129,8 @@ class CashierController extends Controller
     // ── Transaction Methods ──────────────────────────────────────
     public function getTransactions($studentId, $academicTermId)
     {
-        $transactions = Transaction::where('student_id', $studentId)
+        $transactions = Transaction::with(['paymentAccount', 'paymentType'])
+            ->where('student_id', $studentId)
             ->where('academic_term_id', $academicTermId)
             ->orderBy('date', 'desc')
             ->orderBy('created_at', 'desc')
@@ -144,8 +145,8 @@ class CashierController extends Controller
             'student_id' => 'required|exists:students,id',
             'academic_term_id' => 'required|exists:academic_terms,id',
             'or_number' => 'nullable|string|max:100',
-            'type' => 'required|string|max:100',
-            'description' => 'required|string|max:255',
+            'description_id' => 'required|exists:payment_accounts,id',
+            'type_id' => 'required|exists:payment_types,id',
             'amount' => 'required|numeric|min:0',
             'date' => 'required|date',
         ]);
@@ -154,6 +155,9 @@ class CashierController extends Controller
         $validated['cashier_id'] = auth()->id();
 
         $transaction = Transaction::create($validated);
+        
+        // Load relationships for response
+        $transaction->load(['paymentAccount', 'paymentType']);
 
         return response()->json(['success' => true, 'data' => $transaction], 201);
     }
