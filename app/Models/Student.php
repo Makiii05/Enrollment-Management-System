@@ -27,6 +27,8 @@ class Student extends Model
         'civil_status',
         'application_id',
         'status',
+        'account_status',
+        'student_type',
     ];
 
     protected $casts = [
@@ -72,5 +74,10 @@ class Student extends Model
     public function assessmentHistories(): HasMany
     {
         return $this->hasMany(AssessmentHistory::class);
+    }
+
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class);
     }
 }

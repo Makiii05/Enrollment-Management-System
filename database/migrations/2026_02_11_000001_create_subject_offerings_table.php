@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
             $table->foreignId('department_id')->constrained('departments')->onDelete('cascade');
             $table->foreignId('program_id')->constrained('programs')->onDelete('cascade');
+            $table->foreignId('level_id')->nullable()->constrained('levels')->onDelete('set null');
             $table->string('code');
             $table->string('description');
             $table->integer('class_size')->default(40);

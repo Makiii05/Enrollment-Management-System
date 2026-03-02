@@ -12,6 +12,7 @@ use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\RegistrarStudentController;
 use App\Http\Controllers\ClassListController;
+use App\Http\Controllers\EnrollmentStatusController;
 
 /*
 |--------------------------------------------------------------------------
@@ -90,5 +91,9 @@ Route::prefix('registrar')->name('registrar.')->group(function () {
         Route::get('/classlist', [ClassListController::class, 'showClassList'])->name('classlist');
         Route::get('/classlist/{id}/enrolled', [ClassListController::class, 'showEnrolledStudents'])->name('classlist.enrolled');
         Route::get('/classlist/{id}/print', [PdfController::class, 'printClassList'])->name('classlist.print');
+
+        // Enrollment Status API
+        Route::post('/api/enrollment-status/toggle', [EnrollmentStatusController::class, 'toggle'])->name('api.enrollment-status.toggle');
+        Route::get('/api/enrollment-status', [EnrollmentStatusController::class, 'status'])->name('api.enrollment-status');
     });
 });

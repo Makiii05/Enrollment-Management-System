@@ -26,13 +26,13 @@
                           $maleStudents->contains(fn($e) => $e->or_number !== null);
     @endphp
 
-    <div class="flex gap-4 m-4">
+    <div class=" gap-4 m-4">
         <!-- FEMALE TABLE -->
         <div class="flex-1 overflow-x-auto bg-white shadow rounded">
             <table class="table w-full">
                 <thead>
                     <tr>
-                        <th colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="text-center font-bold text-lg">Female Students ({{ $femaleStudents->count() }})</th>
+                        <th colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="font-bold text-black">Female Students ({{ $femaleStudents->count() }})</th>
                     </tr>
                     <tr>
                         <th>#</th>
@@ -68,7 +68,7 @@
             <table class="table w-full">
                 <thead>
                     <tr>
-                        <th colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="text-center font-bold text-lg">Male Students ({{ $maleStudents->count() }})</th>
+                        <th colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="font-bold text-black">Male Students ({{ $maleStudents->count() }})</th>
                     </tr>
                     <tr>
                         <th>#</th>

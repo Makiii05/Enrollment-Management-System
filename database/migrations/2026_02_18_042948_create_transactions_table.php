@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
             $table->foreignId('academic_term_id')->constrained('academic_terms')->onDelete('cascade');
+            $table->foreignId('cashier_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('or_number')->nullable();
-            $table->string('type');
+            $table->foreignId('description_id')->nullable()->constrained('payment_accounts')->onDelete('set null');
+            $table->foreignId('type_id')->nullable()->constrained('payment_types')->onDelete('set null');
             $table->decimal('amount', 12, 2);
-            $table->string('description');
             $table->date('date');
             $table->timestamps();
         });

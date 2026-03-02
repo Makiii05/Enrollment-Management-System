@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use App\Models\Status;
 
 class AccountingAuthController extends Controller
 {
@@ -25,7 +26,7 @@ class AccountingAuthController extends Controller
             $request->session()->regenerate();
             $user = auth()->user();
             if ($user && isset($user->type) && $user->type === 'accounting') {
-                return redirect()->route('accounting.fee');
+                return redirect()->route('accounting.dashboard');
             } else {
                 Auth::logout();
                 $request->session()->invalidate();
@@ -50,6 +51,7 @@ class AccountingAuthController extends Controller
     }
 
     public function showDashboard(){
-        return view('accounting.dashboard');
+        $studentPortalStatus = Status::getStudentPortalStatus();
+        return view('accounting.dashboard', compact('studentPortalStatus'));
     }
 }

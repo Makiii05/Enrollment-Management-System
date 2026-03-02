@@ -19,8 +19,9 @@ return new class extends Migration
             $table->text('type')->nullable();
             $table->float('month_to_pay')->nullable();
             $table->text('group');
-            $table->text('academic_year');
             $table->foreignId('program_id')->constrained('programs')->onDelete('cascade');
+            $table->foreignId('academic_term_id')->nullable()->constrained('academic_terms')->onDelete('cascade');
+            $table->foreignId('student_id')->nullable()->constrained('students')->onDelete('cascade');
         });
     }
 

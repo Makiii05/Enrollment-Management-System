@@ -113,20 +113,6 @@
             padding-top: 4px;
             font-size: 8px;
         }
-        .tables-wrapper {
-            width: 100%;
-        }
-        .tables-wrapper td {
-            border: none;
-            vertical-align: top;
-            padding: 0 5px;
-        }
-        .tables-wrapper td:first-child {
-            padding-left: 0;
-        }
-        .tables-wrapper td:last-child {
-            padding-right: 0;
-        }
         .gender-header {
             text-align: center;
             font-weight: bold;
@@ -162,80 +148,77 @@
         <p><strong>Academic Term:</strong> {{ $subjectOffering->academicTerm->description ?? 'N/A' }}</p>
     </div>
 
-    <table class="tables-wrapper">
-        <tr>
-            <!-- Female Students Table -->
-            <td style="width: 50%;">
-                <table class="student-table">
-                    <thead>
-                        <tr>
-                            <th colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="gender-header">Female Students ({{ $femaleStudents->count() }})</th>
-                        </tr>
-                        <tr>
-                            <th style="width: 20px;">#</th>
-                            <th>Student No.</th>
-                            <th>Name</th>
-                            @if($hasTuitionFees)
-                                <th>OR#</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($femaleStudents as $enlistment)
-                        @php static $femaleCounter = 1; @endphp
-                        <tr>
-                            <td class="text-center">{{ $femaleCounter++ }}</td>
-                            <td>{{ $enlistment->student->student_number ?? 'N/A' }}</td>
-                            <td>{{ $enlistment->student->last_name }}, {{ $enlistment->student->first_name }} {{ $enlistment->student->middle_name }}</td>
-                            @if($hasTuitionFees)
-                                <td>{{ $enlistment->or_number ?? '' }}</td>
-                            @endif
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="text-center">No female students</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </td>
-
-            <!-- Male Students Table -->
-            <td style="width: 50%;">
-                <table class="student-table">
-                    <thead>
-                        <tr>
-                            <th colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="gender-header">Male Students ({{ $maleStudents->count() }})</th>
-                        </tr>
-                        <tr>
-                            <th style="width: 20px;">#</th>
-                            <th>Student No.</th>
-                            <th>Name</th>
-                            @if($hasTuitionFees)
-                                <th>OR#</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($maleStudents as $enlistment)
-                        @php static $maleCounter = 1; @endphp
-                        <tr>
-                            <td class="text-center">{{ $maleCounter++ }}</td>
-                            <td>{{ $enlistment->student->student_number ?? 'N/A' }}</td>
-                            <td>{{ $enlistment->student->last_name }}, {{ $enlistment->student->first_name }} {{ $enlistment->student->middle_name }}</td>
-                            @if($hasTuitionFees)
-                                <td>{{ $enlistment->or_number ?? '' }}</td>
-                            @endif
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="text-center">No male students</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </td>
-        </tr>
+    <!-- Female Students Table -->
+    <table class="student-table">
+        <thead>
+            <tr>
+                <th colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="gender-header">Female Students ({{ $femaleStudents->count() }})</th>
+            </tr>
+            <tr>
+                <th style="width: 30px;">#</th>
+                <th style="width: 100px;">Student No.</th>
+                <th>Name</th>
+                @if($hasTuitionFees)
+                    <th style="width: 60px;">OR#</th>
+                @endif
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($femaleStudents as $enlistment)
+            @php static $femaleCounter = 1; @endphp
+            <tr>
+                <td class="text-center">{{ $femaleCounter++ }}</td>
+                <td>{{ $enlistment->student->student_number ?? 'N/A' }}</td>
+                <td>{{ $enlistment->student->last_name }}, {{ $enlistment->student->first_name }} {{ $enlistment->student->middle_name }}</td>
+                @if($hasTuitionFees)
+                    <td>{{ $enlistment->or_number ?? '' }}</td>
+                @endif
+            </tr>
+            @empty
+            <tr>
+                <td colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="text-center">No female students</td>
+            </tr>
+            @endforelse
+            <tr>
+                <td colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="text-center" style="font-weight: bold;">**nothing follows**</td>
+            </tr>
+        </tbody>
+    </table>
+    <!-- Male Students Table -->
+    <table class="student-table">
+        <thead>
+            <tr>
+                <th colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="gender-header">Male Students ({{ $maleStudents->count() }})</th>
+            </tr>
+            <tr>
+                <th style="width: 30px;">#</th>
+                <th style="width: 100px;">Student No.</th>
+                <th>Name</th>
+                @if($hasTuitionFees)
+                    <th style="width: 60px;">OR#</th>
+                @endif
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($maleStudents as $enlistment)
+            @php static $maleCounter = 1; @endphp
+            <tr>
+                <td class="text-center">{{ $maleCounter++ }}</td>
+                <td>{{ $enlistment->student->student_number ?? 'N/A' }}</td>
+                <td>{{ $enlistment->student->last_name }}, {{ $enlistment->student->first_name }} {{ $enlistment->student->middle_name }}</td>
+                @if($hasTuitionFees)
+                    <td>{{ $enlistment->or_number ?? '' }}</td>
+                @endif
+            </tr>
+            @empty
+            <tr>
+                <td colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="text-center">No male students</td>
+            </tr>
+            @endforelse
+            <tr>
+                <td colspan="{{ $hasTuitionFees ? 4 : 3 }}" class="text-center" style="font-weight: bold;">**nothing follows**</td>
+            </tr>
+        </tbody>
     </table>
 
     <div class="total-section">

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\SubjectOffering;
 use App\Models\Enlistment;
 use App\Models\Transaction;
+use App\Models\PaymentAccount;
 use Illuminate\Support\Facades\DB;
 
 class ClassListController extends Controller
@@ -19,11 +20,23 @@ class ClassListController extends Controller
         $sortBy = $request->query('sort_by', 'code');
         $sortDir = $request->query('sort_dir', 'asc');
 
+        // Subquery to count only enlistments where student has a "Down payment" transaction with active academic term
+        $enrolledCountSubquery = Enlistment::selectRaw('count(DISTINCT enlistments.id)')
+            ->whereColumn('enlistments.subject_offering_id', 'subject_offerings.id')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('transactions')
+                    ->join('payment_accounts', 'transactions.description_id', '=', 'payment_accounts.id')
+                    ->join('academic_terms', 'transactions.academic_term_id', '=', 'academic_terms.id')
+                    ->whereColumn('transactions.student_id', 'enlistments.student_id')
+                    ->where('payment_accounts.description', 'Down payment')
+                    ->where('academic_terms.status', 'active');
+            });
+
         $query = SubjectOffering::with(['subject', 'program', 'level'])
             ->addSelect([
                 'subject_offerings.*',
-                'enrolled_count' => Enlistment::selectRaw('count(*)')
-                    ->whereColumn('enlistments.subject_offering_id', 'subject_offerings.id')
+                'enrolled_count' => $enrolledCountSubquery
             ]);
 
         if ($search) {
@@ -47,34 +60,22 @@ class ClassListController extends Controller
             $query->join('subjects', 'subject_offerings.subject_id', '=', 'subjects.id')
                   ->orderBy('subjects.code', $sortDir)
                   ->select(['subject_offerings.*'])
-                  ->addSelect([
-                      'enrolled_count' => Enlistment::selectRaw('count(*)')
-                          ->whereColumn('enlistments.subject_offering_id', 'subject_offerings.id')
-                  ]);
+                  ->addSelect(['enrolled_count' => $enrolledCountSubquery]);
         } elseif ($sortBy === 'description') {
             $query->join('subjects', 'subject_offerings.subject_id', '=', 'subjects.id')
                   ->orderBy('subjects.description', $sortDir)
                   ->select(['subject_offerings.*'])
-                  ->addSelect([
-                      'enrolled_count' => Enlistment::selectRaw('count(*)')
-                          ->whereColumn('enlistments.subject_offering_id', 'subject_offerings.id')
-                  ]);
+                  ->addSelect(['enrolled_count' => $enrolledCountSubquery]);
         } elseif ($sortBy === 'program') {
             $query->join('programs', 'subject_offerings.program_id', '=', 'programs.id')
                   ->orderBy('programs.code', $sortDir)
                   ->select(['subject_offerings.*'])
-                  ->addSelect([
-                      'enrolled_count' => Enlistment::selectRaw('count(*)')
-                          ->whereColumn('enlistments.subject_offering_id', 'subject_offerings.id')
-                  ]);
+                  ->addSelect(['enrolled_count' => $enrolledCountSubquery]);
         } elseif ($sortBy === 'level') {
             $query->leftJoin('levels', 'subject_offerings.level_id', '=', 'levels.id')
                   ->orderBy('levels.order', $sortDir)
                   ->select(['subject_offerings.*'])
-                  ->addSelect([
-                      'enrolled_count' => Enlistment::selectRaw('count(*)')
-                          ->whereColumn('enlistments.subject_offering_id', 'subject_offerings.id')
-                  ]);
+                  ->addSelect(['enrolled_count' => $enrolledCountSubquery]);
         } elseif ($sortBy === 'enrolled') {
             $query->orderBy('enrolled_count', $sortDir);
         } else {
@@ -103,9 +104,20 @@ class ClassListController extends Controller
         $subjectOffering = SubjectOffering::with(['subject', 'program', 'level'])
             ->findOrFail($id);
 
-        // Get all enlistments for this subject offering with student info
+        // Get enlistments where student has a "Down payment" transaction with active academic term
         $enlistments = Enlistment::where('subject_offering_id', $id)
             ->with(['student', 'student.level', 'student.program'])
+            ->whereHas('student', function ($studentQuery) {
+                $studentQuery->whereExists(function ($query) {
+                    $query->select(DB::raw(1))
+                        ->from('transactions')
+                        ->join('payment_accounts', 'transactions.description_id', '=', 'payment_accounts.id')
+                        ->join('academic_terms', 'transactions.academic_term_id', '=', 'academic_terms.id')
+                        ->whereColumn('transactions.student_id', 'students.id')
+                        ->where('payment_accounts.description', 'Down payment')
+                        ->where('academic_terms.status', 'active');
+                });
+            })
             ->get();
 
         // Separate students by sex

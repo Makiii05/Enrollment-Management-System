@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AccountingAuthController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\PaymentDetailsController;
 use App\Http\Controllers\PdfController;
+use App\Http\Controllers\StudentPortalStatusController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +22,13 @@ Route::prefix('accounting')->name('accounting.')->group(function () {
 
     // Protected routes - require authentication and accounting type
     Route::middleware(['auth', 'can:access-accounting'])->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [AccountingAuthController::class, 'showDashboard'])->name('dashboard');
+        
+        // Student Portal Status API
+        Route::post('/api/student-portal-status/toggle', [StudentPortalStatusController::class, 'toggle'])->name('api.student-portal-status.toggle');
+        Route::get('/api/student-portal-status', [StudentPortalStatusController::class, 'status'])->name('api.student-portal-status');
+
         Route::get('/fee', [FeeController::class, 'showFees'])->name('fee');
         Route::match(['get', 'post'], '/fee/search', [FeeController::class, 'searchFee'])->name('fee.search');
         Route::post('/fee', [FeeController::class, 'createFee'])->name('fee.create');
