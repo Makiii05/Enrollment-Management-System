@@ -80,4 +80,9 @@ class Student extends Model
     {
         return $this->hasOne(User::class);
     }
+
+    public function account(): HasOne
+    {
+        return $this->hasOne(StudentAccount::class);
+    }
 }

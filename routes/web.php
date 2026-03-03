@@ -43,3 +43,6 @@ require __DIR__.'/modules/department.php';
 
 // Admin module - system administration
 require __DIR__.'/modules/admin.php';
+
+// Student Portal module - student self-service
+require __DIR__.'/modules/student_portal.php';
