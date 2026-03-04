@@ -135,6 +135,9 @@ class StudentPortalAuthController extends Controller
             return redirect()->route('student_portal.login');
         }
         
+        // Load account relationship
+        $student->load('account');
+        
         return view('student_portal.examination_permit', compact('student'));
     }
 

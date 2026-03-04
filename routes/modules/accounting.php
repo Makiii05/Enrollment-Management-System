@@ -29,6 +29,10 @@ Route::prefix('accounting')->name('accounting.')->group(function () {
         Route::post('/api/student-portal-status/toggle', [StudentPortalStatusController::class, 'toggle'])->name('api.student-portal-status.toggle');
         Route::get('/api/student-portal-status', [StudentPortalStatusController::class, 'status'])->name('api.student-portal-status');
 
+        // Student Account Status API
+        Route::post('/api/student-accounts/deactivate-all', [StudentPortalStatusController::class, 'deactivateAllAccounts'])->name('api.student-accounts.deactivate-all');
+        Route::post('/api/student-accounts/{id}/toggle', [StudentPortalStatusController::class, 'toggleAccountStatus'])->name('api.student-accounts.toggle');
+
         Route::get('/fee', [FeeController::class, 'showFees'])->name('fee');
         Route::match(['get', 'post'], '/fee/search', [FeeController::class, 'searchFee'])->name('fee.search');
         Route::post('/fee', [FeeController::class, 'createFee'])->name('fee.create');
@@ -55,6 +59,11 @@ Route::prefix('accounting')->name('accounting.')->group(function () {
         // Print routes
         Route::get('/print/daily-transactions', [PdfController::class, 'printDailyTransactions'])->name('print.daily-transactions');
         Route::get('/print/sales-invoice/{id}', [PdfController::class, 'printSalesInvoice'])->name('print.sales-invoice');
+        Route::get('/print/examination-permit/{studentId}', [PdfController::class, 'printExaminationPermit'])->name('print.examination-permit');
+
+        // Examination Permit API
+        Route::post('/api/examination-permit/{accountId}/generate', [StudentPortalStatusController::class, 'generateExaminationPermit'])->name('api.examination-permit.generate');
+        Route::post('/api/examination-permit/{accountId}/clear', [StudentPortalStatusController::class, 'clearExaminationPermit'])->name('api.examination-permit.clear');
 
         // Payment Details routes
         Route::get('/payment-details', [PaymentDetailsController::class, 'index'])->name('payment_details');

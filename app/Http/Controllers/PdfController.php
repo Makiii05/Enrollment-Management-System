@@ -297,6 +297,19 @@ class PdfController extends Controller
         return $pdf->stream('sales_invoice_' . $transaction->or_number . '.pdf');
     }
 
+    /**
+     * Print examination permit for a student.
+     */
+    public function printExaminationPermit($studentId)
+    {
+        $student = Student::with(['account', 'program', 'department', 'level'])->findOrFail($studentId);
+        
+        $pdf = Pdf::loadView('pdf.examination_permit', compact('student'))
+            ->setPaper('a4', 'portrait');
+        
+        return $pdf->stream('examination_permit_' . $student->student_number . '.pdf');
+    }
+
     // ── Fee Ledger PDF Method ────────────────────────────────────────
     public function printFeeLedger($id)
     {

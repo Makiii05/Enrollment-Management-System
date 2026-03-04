@@ -47,6 +47,14 @@
                         <span class="font-semibold text-gray-500">Contact No.</span>
                         <p class="text-base">{{ $student->contact->mobile_number ?? '-' }}</p>
                     </div>
+                    <div>
+                        <span class="font-semibold text-gray-500">Account Status</span>
+                        <p class="text-base">
+                            <span id="accountStatusBadge" class="badge {{ ($student->account->account_status ?? 'off') === 'on' ? 'badge-success' : 'badge-error' }}">
+                                {{ ucfirst($student->account->account_status ?? 'off') }}
+                            </span>
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -161,11 +169,35 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Examination Permit Container -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h4 class="font-semibold text-lg mb-4">Examination Permit</h4>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-gray-500">Permit Code:</span>
+                        <span id="examPermitCode" class="text-xl font-bold ml-2">{{ $student->account->examination_permit ?? '-' }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn btn-success btn-sm" onclick="generateExamPermit()" id="generatePermitBtn">
+                            <span id="generatePermitText">Generate</span>
+                            <span id="generatePermitLoading" class="loading loading-spinner loading-xs hidden"></span>
+                        </button>
+                        <button class="btn btn-warning btn-sm" onclick="clearExamPermit()" id="clearPermitBtn">
+                            <span id="clearPermitText">Clear</span>
+                            <span id="clearPermitLoading" class="loading loading-spinner loading-xs hidden"></span>
+                        </button>
+                        <button class="btn btn-info btn-sm" onclick="printExamPermit()">Print</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         const studentId = {{ $student->id }};
+        const studentAccountId = {{ $student->account->id ?? 'null' }};
+        let accountStatus = '{{ $student->account->account_status ?? "off" }}';
         const studentFeesApiUrl = '{{ url("/accounting/api/student-fees") }}';
         const enlistmentsApiUrl = '{{ url("/accounting/api/enlistments") }}';
         const transactionsApiUrl = '{{ url("/accounting/api/transactions") }}';
@@ -448,6 +480,18 @@
             }
         }
 
+        // Store pending form data for deferred transaction
+        let pendingFormData = null;
+
+        // Check if selected description is downpayment
+        function isDownpaymentSelected() {
+            const select = document.getElementById('transactionDescription');
+            const selectedOption = select.options[select.selectedIndex];
+            if (!selectedOption) return false;
+            return selectedOption.text.toLowerCase().includes('downpayment') || 
+                   selectedOption.text.toLowerCase().includes('down payment');
+        }
+
         // Add Transaction
         document.getElementById('transactionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -458,14 +502,6 @@
                 return;
             }
 
-            const btn = document.getElementById('submitTransactionBtn');
-            const btnText = document.getElementById('submitTransactionText');
-            const btnLoading = document.getElementById('submitTransactionLoading');
-
-            btn.disabled = true;
-            btnText.classList.add('hidden');
-            btnLoading.classList.remove('hidden');
-
             const formData = {
                 student_id: studentId,
                 academic_term_id: termId,
@@ -475,6 +511,25 @@
                 amount: document.getElementById('transactionAmount').value,
                 date: document.getElementById('transactionDate').value,
             };
+
+            // Check if account is off and description is downpayment
+            if (accountStatus === 'off' && isDownpaymentSelected()) {
+                pendingFormData = formData;
+                document.getElementById('openAccountModal').showModal();
+                return;
+            }
+
+            await submitTransaction(formData);
+        });
+
+        async function submitTransaction(formData) {
+            const btn = document.getElementById('submitTransactionBtn');
+            const btnText = document.getElementById('submitTransactionText');
+            const btnLoading = document.getElementById('submitTransactionLoading');
+
+            btn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoading.classList.remove('hidden');
 
             try {
                 const response = await fetch(`${transactionsApiUrl}/create`, {
@@ -496,7 +551,7 @@
                 
                 // Reload OR number and transactions
                 loadNextOrNumber();
-                loadTransactions(termId);
+                loadTransactions(getSelectedTermId());
             } catch (error) {
                 console.error('Error creating transaction:', error);
                 alert('Error creating transaction. Please try again.');
@@ -531,6 +586,150 @@
         function printTransaction(id) {
             window.open('{{ url("/accounting/print/sales-invoice") }}/' + id, '_blank');
         }
+
+        // Open account and submit pending transaction
+        async function openAccountAndSubmit() {
+            if (!studentAccountId) {
+                alert('No account found for this student.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/accounting/api/student-accounts/${studentAccountId}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.status === 'on') {
+                    accountStatus = 'on';
+                    updateAccountStatusBadge();
+                    document.getElementById('openAccountModal').close();
+                    
+                    if (pendingFormData) {
+                        await submitTransaction(pendingFormData);
+                        pendingFormData = null;
+                    }
+                }
+            } catch (error) {
+                console.error('Error opening account:', error);
+                alert('Error opening account. Please try again.');
+            }
+        }
+
+        // Close modal without opening account
+        function closeOpenAccountModal() {
+            document.getElementById('openAccountModal').close();
+            pendingFormData = null;
+        }
+
+        // Update account status badge
+        function updateAccountStatusBadge() {
+            const badge = document.getElementById('accountStatusBadge');
+            if (accountStatus === 'on') {
+                badge.textContent = 'On';
+                badge.className = 'badge badge-success';
+            } else {
+                badge.textContent = 'Off';
+                badge.className = 'badge badge-error';
+            }
+        }
+
+        // Generate Examination Permit
+        async function generateExamPermit() {
+            if (!studentAccountId) {
+                alert('No account found for this student.');
+                return;
+            }
+
+            const btn = document.getElementById('generatePermitBtn');
+            const btnText = document.getElementById('generatePermitText');
+            const btnLoading = document.getElementById('generatePermitLoading');
+
+            btn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoading.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`/accounting/api/examination-permit/${studentAccountId}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('examPermitCode').textContent = data.permit;
+                }
+            } catch (error) {
+                console.error('Error generating exam permit:', error);
+                alert('Error generating examination permit. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoading.classList.add('hidden');
+            }
+        }
+
+        // Clear Examination Permit
+        async function clearExamPermit() {
+            if (!studentAccountId) {
+                alert('No account found for this student.');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to clear the examination permit?')) {
+                return;
+            }
+
+            const btn = document.getElementById('clearPermitBtn');
+            const btnText = document.getElementById('clearPermitText');
+            const btnLoading = document.getElementById('clearPermitLoading');
+
+            btn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoading.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`/accounting/api/examination-permit/${studentAccountId}/clear`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('examPermitCode').textContent = '-';
+                }
+            } catch (error) {
+                console.error('Error clearing exam permit:', error);
+                alert('Error clearing examination permit. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoading.classList.add('hidden');
+            }
+        }
+
+        // Print Examination Permit
+        function printExamPermit() {
+            window.open(`/accounting/print/examination-permit/${studentId}`, '_blank');
+        }
     </script>
+
+    @include('partials.open-account-modal')
 
 </x-accounting_sidebar>

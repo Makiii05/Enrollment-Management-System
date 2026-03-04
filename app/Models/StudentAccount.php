@@ -11,6 +11,7 @@ class StudentAccount extends Model
         'student_id',
         'account_status',
         'password',
+        'examination_permit',
     ];
 
     protected $hidden = [

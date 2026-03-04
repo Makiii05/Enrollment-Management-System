@@ -1,5 +1,7 @@
 <x-accounting_sidebar>
 
+    @include('partials.notifications')
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <div class="m-4 font-bold text-4xl">
@@ -24,6 +26,23 @@
                                class="toggle toggle-success toggle-lg" 
                                {{ $studentPortalStatus === 'on' ? 'checked' : '' }}
                                onchange="toggleStudentPortalStatus()" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deactivate Students Accounts Widget -->
+        <div class="card bg-white shadow-lg">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-800">Deactivate Student Accounts</h2>
+                        <p class="text-sm text-gray-500">Deactivate all student accounts at once. This action requires password verification.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-error" onclick="document.getElementById('deactivateAccountsModal').showModal()">
+                            Deactivate All Accounts
+                        </button>
                     </div>
                 </div>
             </div>
@@ -59,6 +78,59 @@
                 toggle.checked = !toggle.checked;
             }
         }
+
+        async function deactivateAllAccounts() {
+            const passwordInput = document.getElementById('deactivatePassword');
+            const submitBtn = document.getElementById('deactivateSubmitBtn');
+            const submitText = document.getElementById('deactivateSubmitText');
+            const submitLoading = document.getElementById('deactivateSubmitLoading');
+            const errorDiv = document.getElementById('deactivateError');
+
+            const password = passwordInput.value;
+            if (!password) {
+                errorDiv.textContent = 'Please enter your password.';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitText.classList.add('hidden');
+            submitLoading.classList.remove('hidden');
+            errorDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch('{{ route("accounting.api.student-accounts.deactivate-all") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ password: password }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    errorDiv.textContent = data.message || 'An error occurred.';
+                    errorDiv.classList.remove('hidden');
+                } else {
+                    document.getElementById('deactivateAccountsModal').close();
+                    passwordInput.value = '';
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('Error deactivating accounts:', error);
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitText.classList.remove('hidden');
+                submitLoading.classList.add('hidden');
+            }
+        }
     </script>
+
+    @include('partials.deactivate-accounts-modal')
 
 </x-accounting_sidebar>

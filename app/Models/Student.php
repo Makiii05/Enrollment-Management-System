@@ -27,7 +27,6 @@ class Student extends Model
         'civil_status',
         'application_id',
         'status',
-        'account_status',
         'student_type',
     ];
 

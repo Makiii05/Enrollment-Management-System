@@ -24,7 +24,7 @@ class CashierController extends Controller
             return response()->json(['data' => []]);
         }
         
-        $students = Student::with(['department', 'program', 'level'])
+        $students = Student::with(['department', 'program', 'level', 'account'])
             ->where(function ($query) use ($search) {
                 $query->where('student_number', 'like', '%' . $search . '%')
                     ->orWhere('lrn', 'like', '%' . $search . '%')
@@ -58,7 +58,7 @@ class CashierController extends Controller
 
     public function showPayment($id)
     {
-        $student = Student::with(['department', 'program', 'level', 'contact'])->findOrFail($id);
+        $student = Student::with(['department', 'program', 'level', 'contact', 'account'])->findOrFail($id);
 
         // Get all academic terms for this student's department
         $academicTerms = AcademicTerm::where('department_id', $student->department_id)
