@@ -33,6 +33,9 @@ Route::prefix('accounting')->name('accounting.')->group(function () {
         Route::post('/api/student-accounts/deactivate-all', [StudentPortalStatusController::class, 'deactivateAllAccounts'])->name('api.student-accounts.deactivate-all');
         Route::post('/api/student-accounts/{id}/toggle', [StudentPortalStatusController::class, 'toggleAccountStatus'])->name('api.student-accounts.toggle');
 
+        // Examination Permits API
+        Route::post('/api/examination-permits/clear-all', [StudentPortalStatusController::class, 'clearAllExaminationPermits'])->name('api.examination-permits.clear-all');
+
         Route::get('/fee', [FeeController::class, 'showFees'])->name('fee');
         Route::match(['get', 'post'], '/fee/search', [FeeController::class, 'searchFee'])->name('fee.search');
         Route::post('/fee', [FeeController::class, 'createFee'])->name('fee.create');

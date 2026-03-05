@@ -84,8 +84,12 @@ class StudentPortalStatusController extends Controller
     {
         $account = StudentAccount::findOrFail($accountId);
         
-        // Generate a unique permit code
-        $permit = 'EP-' . strtoupper(uniqid()) . '-' . date('Ymd');
+        // Generate a 7-character alphanumeric permit code
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $permit = '';
+        for ($i = 0; $i < 7; $i++) {
+            $permit .= $characters[random_int(0, strlen($characters) - 1)];
+        }
         
         $account->update(['examination_permit' => $permit]);
 
@@ -108,6 +112,33 @@ class StudentPortalStatusController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Examination permit cleared successfully.',
+        ]);
+    }
+
+    /**
+     * Clear all examination permits.
+     */
+    public function clearAllExaminationPermits(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        $user = auth()->user();
+        
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid password.',
+            ], 401);
+        }
+
+        $count = StudentAccount::whereNotNull('examination_permit')->update(['examination_permit' => null]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Successfully cleared {$count} examination permits.",
+            'count' => $count,
         ]);
     }
 }

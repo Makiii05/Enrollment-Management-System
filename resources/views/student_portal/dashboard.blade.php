@@ -36,11 +36,7 @@
                     </div>
                     <div>
                         <span class="font-semibold text-gray-500">Status</span>
-                        <p class="text-base">
-                            <span class="badge {{ $student->status === 'enrolled' ? 'badge-success' : 'badge-warning' }}">
-                                {{ ucfirst($student->status ?? 'N/A') }}
-                            </span>
-                        </p>
+                        <p class="text-base">{{ ucfirst($student->status ?? 'N/A') }}</p>
                     </div>
                     <div>
                         <span class="font-semibold text-gray-500">Student Type</span>

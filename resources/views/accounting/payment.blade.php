@@ -50,7 +50,7 @@
                     <div>
                         <span class="font-semibold text-gray-500">Account Status</span>
                         <p class="text-base">
-                            <span id="accountStatusBadge" class="badge {{ ($student->account->account_status ?? 'off') === 'on' ? 'badge-success' : 'badge-error' }}">
+                            <span id="accountStatusBadge">
                                 {{ ucfirst($student->account->account_status ?? 'off') }}
                             </span>
                         </p>
@@ -498,7 +498,7 @@
             
             const termId = getSelectedTermId();
             if (!termId) {
-                alert('Please select an academic term first.');
+                showToast('Please select an academic term first.', 'warning');
                 return;
             }
 
@@ -554,13 +554,13 @@
                 loadTransactions(getSelectedTermId());
             } catch (error) {
                 console.error('Error creating transaction:', error);
-                alert('Error creating transaction. Please try again.');
+                showToast('Error creating transaction. Please try again.', 'error');
             } finally {
                 updateSubmitButtonState();
                 btnText.classList.remove('hidden');
                 btnLoading.classList.add('hidden');
             }
-        });
+        };
 
         async function deleteTransaction(id) {
             if (!confirm('Are you sure you want to delete this transaction?')) return;
@@ -579,7 +579,7 @@
                 loadNextOrNumber();
             } catch (error) {
                 console.error('Error deleting transaction:', error);
-                alert('Error deleting transaction. Please try again.');
+                showToast('Error deleting transaction. Please try again.', 'error');
             }
         }
 
@@ -590,7 +590,7 @@
         // Open account and submit pending transaction
         async function openAccountAndSubmit() {
             if (!studentAccountId) {
-                alert('No account found for this student.');
+                showToast('No account found for this student.', 'error');
                 return;
             }
 
@@ -618,7 +618,7 @@
                 }
             } catch (error) {
                 console.error('Error opening account:', error);
-                alert('Error opening account. Please try again.');
+                showToast('Error opening account. Please try again.', 'error');
             }
         }
 
@@ -643,7 +643,7 @@
         // Generate Examination Permit
         async function generateExamPermit() {
             if (!studentAccountId) {
-                alert('No account found for this student.');
+                showToast('No account found for this student.', 'error');
                 return;
             }
 
@@ -672,7 +672,7 @@
                 }
             } catch (error) {
                 console.error('Error generating exam permit:', error);
-                alert('Error generating examination permit. Please try again.');
+                showToast('Error generating examination permit. Please try again.', 'error');
             } finally {
                 btn.disabled = false;
                 btnText.classList.remove('hidden');
@@ -683,7 +683,7 @@
         // Clear Examination Permit
         async function clearExamPermit() {
             if (!studentAccountId) {
-                alert('No account found for this student.');
+                showToast('No account found for this student.', 'error');
                 return;
             }
 
@@ -716,7 +716,7 @@
                 }
             } catch (error) {
                 console.error('Error clearing exam permit:', error);
-                alert('Error clearing examination permit. Please try again.');
+                showToast('Error clearing examination permit. Please try again.', 'error');
             } finally {
                 btn.disabled = false;
                 btnText.classList.remove('hidden');

@@ -17,9 +17,6 @@
                         </div>
                     @else
                         <div class="text-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-16 text-gray-400 mb-4">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                            </svg>
                             <p class="text-xl font-semibold text-gray-600 mb-2">-</p>
                             <p class="text-gray-500 text-center">
                                 No examination permit has been generated yet.<br>

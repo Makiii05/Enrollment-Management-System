@@ -115,7 +115,7 @@
 
     async function toggleAccountStatus(accountId, studentId) {
         if (!accountId) {
-            alert('No account found for this student.');
+            showToast('No account found for this student.', 'error');
             return;
         }
 
@@ -153,7 +153,7 @@
             }
         } catch (error) {
             console.error('Error toggling account status:', error);
-            alert('Error toggling account status. Please try again.');
+            showToast('Error toggling account status. Please try again.', 'error');
         }
     }
     </script>

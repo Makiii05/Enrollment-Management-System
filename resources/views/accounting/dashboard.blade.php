@@ -36,12 +36,29 @@
             <div class="card-body">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-lg font-semibold text-gray-800">Deactivate Student Accounts</h2>
+                        <h2 class="text-lg font-semibold text-gray-800">Deactivate All Student Accounts</h2>
                         <p class="text-sm text-gray-500">Deactivate all student accounts at once. This action requires password verification.</p>
                     </div>
                     <div>
                         <button class="btn btn-error" onclick="document.getElementById('deactivateAccountsModal').showModal()">
                             Deactivate All Accounts
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clear All Examination Permits Widget -->
+        <div class="card bg-white shadow-lg">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-800">Clear All Examination Permits</h2>
+                        <p class="text-sm text-gray-500">Clear all examination permits at once. This action requires password verification.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-warning" onclick="document.getElementById('clearExamPermitsModal').showModal()">
+                            Clear All Permits
                         </button>
                     </div>
                 </div>
@@ -117,7 +134,7 @@
                 } else {
                     document.getElementById('deactivateAccountsModal').close();
                     passwordInput.value = '';
-                    alert(data.message);
+                    showToast(data.message, 'success');
                 }
             } catch (error) {
                 console.error('Error deactivating accounts:', error);
@@ -129,8 +146,60 @@
                 submitLoading.classList.add('hidden');
             }
         }
+
+        async function clearAllExamPermits() {
+            const passwordInput = document.getElementById('clearPermitsPassword');
+            const submitBtn = document.getElementById('clearPermitsSubmitBtn');
+            const submitText = document.getElementById('clearPermitsSubmitText');
+            const submitLoading = document.getElementById('clearPermitsSubmitLoading');
+            const errorDiv = document.getElementById('clearPermitsError');
+
+            const password = passwordInput.value;
+            if (!password) {
+                errorDiv.textContent = 'Please enter your password.';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitText.classList.add('hidden');
+            submitLoading.classList.remove('hidden');
+            errorDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch('{{ route("accounting.api.examination-permits.clear-all") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ password: password }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    errorDiv.textContent = data.message || 'An error occurred.';
+                    errorDiv.classList.remove('hidden');
+                } else {
+                    document.getElementById('clearExamPermitsModal').close();
+                    passwordInput.value = '';
+                    showToast(data.message, 'success');
+                }
+            } catch (error) {
+                console.error('Error clearing examination permits:', error);
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitText.classList.remove('hidden');
+                submitLoading.classList.add('hidden');
+            }
+        }
     </script>
 
     @include('partials.deactivate-accounts-modal')
+    @include('partials.clear-exam-permits-modal')
 
 </x-accounting_sidebar>
