@@ -108,17 +108,215 @@ class ApplicantController extends Controller
     public function showApplicant(Request $request){
         $academicYears = DashboardController::getAcademicYearOptions();
         $selectedYear = $request->query('academic_year', '2025 - 2026');
+        $search = $request->query('search', '');
+        $sortColumn = $request->query('sort', 'created_at');
+        $sortDirection = $request->query('direction', 'desc');
 
-        $applicants = Applicant::with('admission')
-            ->where('academic_year', $selectedYear)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Validate sort column to prevent SQL injection
+        $allowedSortColumns = ['id', 'application_no', 'first_name', 'last_name', 'status', 'created_at'];
+        if (!in_array($sortColumn, $allowedSortColumns)) {
+            $sortColumn = 'created_at';
+        }
+        $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+
+        $query = Applicant::with('admission')
+            ->where('academic_year', $selectedYear);
+
+        // Apply search filter across all fields
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('middle_name', 'like', "%{$search}%")
+                  ->orWhere('application_no', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('status', 'like', "%{$search}%")
+                  ->orWhere('level', 'like', "%{$search}%")
+                  ->orWhere('student_type', 'like', "%{$search}%")
+                  ->orWhere('lrn', 'like', "%{$search}%")
+                  ->orWhere('sex', 'like', "%{$search}%")
+                  ->orWhere('citizenship', 'like', "%{$search}%")
+                  ->orWhere('religion', 'like', "%{$search}%")
+                  ->orWhere('civil_status', 'like', "%{$search}%")
+                  ->orWhere('present_address', 'like', "%{$search}%")
+                  ->orWhere('permanent_address', 'like', "%{$search}%")
+                  ->orWhere('mobile_number', 'like', "%{$search}%")
+                  ->orWhere('telephone_number', 'like', "%{$search}%")
+                  ->orWhere('mother_name', 'like', "%{$search}%")
+                  ->orWhere('father_name', 'like', "%{$search}%")
+                  ->orWhere('guardian_name', 'like', "%{$search}%")
+                  ->orWhere('elementary_school_name', 'like', "%{$search}%")
+                  ->orWhere('junior_school_name', 'like', "%{$search}%")
+                  ->orWhere('senior_school_name', 'like', "%{$search}%")
+                  ->orWhere('college_school_name', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply sorting
+        $query->orderBy($sortColumn, $sortDirection);
+
+        // Paginate results
+        $applicants = $query->paginate(20)->withQueryString();
 
         return view('admission.applicant', [
             'applicants' => $applicants,
             'academicYears' => $academicYears,
             'selectedYear' => $selectedYear,
+            'search' => $search,
+            'sortColumn' => $sortColumn,
+            'sortDirection' => $sortDirection,
         ]);
+    }
+
+    /**
+     * API endpoint for searching applicants
+     */
+    public function searchApplicants(Request $request)
+    {
+        $search = $request->query('search', '');
+        $academicYear = $request->query('academic_year', '2025 - 2026');
+        $sortColumn = $request->query('sort', 'created_at');
+        $sortDirection = $request->query('direction', 'desc');
+        $page = $request->query('page', 1);
+
+        // Validate sort column
+        $allowedSortColumns = ['id', 'application_no', 'first_name', 'last_name', 'status', 'created_at'];
+        if (!in_array($sortColumn, $allowedSortColumns)) {
+            $sortColumn = 'created_at';
+        }
+        $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+
+        $query = Applicant::with('admission')
+            ->where('academic_year', $academicYear);
+
+        // Apply search filter across all fields
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('middle_name', 'like', "%{$search}%")
+                  ->orWhere('application_no', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('status', 'like', "%{$search}%")
+                  ->orWhere('level', 'like', "%{$search}%")
+                  ->orWhere('student_type', 'like', "%{$search}%")
+                  ->orWhere('lrn', 'like', "%{$search}%")
+                  ->orWhere('sex', 'like', "%{$search}%")
+                  ->orWhere('citizenship', 'like', "%{$search}%")
+                  ->orWhere('religion', 'like', "%{$search}%")
+                  ->orWhere('civil_status', 'like', "%{$search}%")
+                  ->orWhere('present_address', 'like', "%{$search}%")
+                  ->orWhere('permanent_address', 'like', "%{$search}%")
+                  ->orWhere('mobile_number', 'like', "%{$search}%")
+                  ->orWhere('telephone_number', 'like', "%{$search}%")
+                  ->orWhere('mother_name', 'like', "%{$search}%")
+                  ->orWhere('father_name', 'like', "%{$search}%")
+                  ->orWhere('guardian_name', 'like', "%{$search}%")
+                  ->orWhere('elementary_school_name', 'like', "%{$search}%")
+                  ->orWhere('junior_school_name', 'like', "%{$search}%")
+                  ->orWhere('senior_school_name', 'like', "%{$search}%")
+                  ->orWhere('college_school_name', 'like', "%{$search}%");
+            });
+        }
+
+        // Apply sorting
+        $query->orderBy($sortColumn, $sortDirection);
+
+        // Paginate results
+        $applicants = $query->paginate(20);
+
+        return response()->json([
+            'success' => true,
+            'data' => $applicants->items(),
+            'pagination' => [
+                'current_page' => $applicants->currentPage(),
+                'last_page' => $applicants->lastPage(),
+                'per_page' => $applicants->perPage(),
+                'total' => $applicants->total(),
+                'from' => $applicants->firstItem(),
+                'to' => $applicants->lastItem(),
+            ],
+            'search' => $search,
+            'sort' => $sortColumn,
+            'direction' => $sortDirection,
+        ]);
+    }
+
+    public function editApplicant($id){
+        $applicant = Applicant::with('admission')->findOrFail($id);
+        $levels = Level::all();
+        $strands = Program::whereHas('department', function($query){
+            $query->where('code', 'SHS');
+        })->get();
+        $college_programs = Program::whereHas('department', function($query){
+            $query->where('description', 'like', '%College%');
+        })->get();
+
+        return view('admission.applicant-edit', [
+            'applicant' => $applicant,
+            'levels' => $levels,
+            'strands' => $strands,
+            'college_programs' => $college_programs,
+        ]);
+    }
+
+    public function updateApplicant(Request $request, $id){
+        $applicant = Applicant::findOrFail($id);
+
+        $validated = $request->validate([
+            "level" => "nullable",
+            "student_type" => "nullable",
+            "year_level" => "nullable",
+            "strand" => "nullable",
+            "first_program_choice" => "nullable",
+            "second_program_choice" => "nullable",
+            "third_program_choice" => "nullable",
+            "last_name" => "required",
+            "first_name" => "required",
+            "middle_name" => "nullable",
+            "sex" => "required",
+            "citizenship" => "nullable",
+            "religion" => "nullable",
+            "birthdate" => "nullable|date",
+            "place_of_birth" => "nullable",
+            "civil_status" => "nullable",
+            "present_address" => "nullable",
+            "zip_code" => "nullable|integer",
+            "permanent_address" => "nullable",
+            "telephone_number" => "nullable",
+            "mobile_number" => "nullable",
+            "email" => "required|email",
+            "mother_name" => "nullable",
+            "mother_occupation" => "nullable",
+            "mother_contact_number" => "nullable",
+            "mother_monthly_income" => "nullable|integer",
+            "father_name" => "nullable",
+            "father_occupation" => "nullable",
+            "father_contact_number" => "nullable",
+            "father_monthly_income" => "nullable|integer",
+            "guardian_name" => "nullable",
+            "guardian_occupation" => "nullable",
+            "guardian_contact_number" => "nullable",
+            "guardian_monthly_income" => "nullable|integer",
+            "elementary_school_name" => "nullable",
+            "elementary_school_address" => "nullable",
+            "elementary_inclusive_years" => "nullable",
+            "junior_school_name" => "nullable",
+            "junior_school_address" => "nullable",
+            "junior_inclusive_years" => "nullable",
+            "senior_school_name" => "nullable",
+            "senior_school_address" => "nullable",
+            "senior_inclusive_years" => "nullable",
+            "college_school_name" => "nullable",
+            "college_school_address" => "nullable",
+            "college_inclusive_years" => "nullable",
+            "lrn" => "nullable|integer",
+        ]);
+
+        $applicant->update($validated);
+
+        return redirect()->route('admission.applicant')
+            ->with('success', "Applicant '{$applicant->first_name} {$applicant->last_name}' updated successfully.");
     }
 
     /**

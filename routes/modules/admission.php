@@ -26,6 +26,9 @@ Route::prefix('admission')->name('admission.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admissionDashboard'])->name('dashboard');
 
         Route::get('/applicant', [ApplicantController::class, 'showApplicant'])->name('applicant');
+        Route::get('/applicant/{id}/edit', [ApplicantController::class, 'editApplicant'])->name('applicant.edit');
+        Route::post('/applicant/{id}/update', [ApplicantController::class, 'updateApplicant'])->name('applicant.update');
+        Route::get('/api/applicants/search', [ApplicantController::class, 'searchApplicants'])->name('api.applicants.search');
         
         Route::get('/schedules', [ScheduleController::class, 'showSchedule'])->name('schedule');
         Route::post('/schedules', [ScheduleController::class, 'createSchedule'])->name('schedule.create');

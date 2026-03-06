@@ -13,10 +13,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Home route
+// Home route - Landing Page
 Route::get('/', function () {
     return view('index');
 })->name('index');
+
+// Navigate route - Department Portal Selection
+Route::get('/navigate', function () {
+    return view('navigate');
+})->name('navigate');
 
 /*
 |--------------------------------------------------------------------------
