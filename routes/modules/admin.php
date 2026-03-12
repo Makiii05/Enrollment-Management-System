@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AdminAuthController;
+use App\Http\Controllers\WebsiteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Protected routes - require authentication and admin type
     Route::middleware(['auth', 'can:access-admin'])->group(function () {
         Route::get('/dashboard', [AdminAuthController::class, 'showDashboard'])->name('dashboard');
+        Route::get('/website', [WebsiteController::class, 'showWebsite'])->name('website');
+        Route::post('/website', [WebsiteController::class, 'store'])->name('website.store');
+        Route::post('/website/{id}/update', [WebsiteController::class, 'update'])->name('website.update');
+        Route::post('/website/{id}/delete', [WebsiteController::class, 'destroy'])->name('website.delete');
 
         Route::get('/users', [AdminAuthController::class, 'showUsers'])->name('users');
         Route::post('/users', [AdminAuthController::class, 'createUser'])->name('users.create');

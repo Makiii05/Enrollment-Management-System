@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Models\Website;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +16,8 @@ use Illuminate\Support\Facades\Route;
 
 // Home route - Landing Page
 Route::get('/', function () {
-    return view('index');
+    $websites = Website::all();
+    return view('index', ['websites' => $websites]);
 })->name('index');
 
 // Navigate route - Department Portal Selection
