@@ -9,6 +9,7 @@ use App\Models\Applicant;
 use App\Models\Schedule;
 use App\Models\Admission;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmailController;
 use Carbon\Carbon;
 
 class ApplicantController extends Controller
@@ -98,10 +99,14 @@ class ApplicantController extends Controller
             $isNew = true;
         }
         
+        // Send confirmation email
+        EmailController::sendApplicationConfirmation($applicant, $isNew);
+
         // Redirect with success notification
         return redirect()->route('applicant.form')
             ->with('success', true)
             ->with('application_no', $applicant->application_no)
+            ->with('applicant_email', $applicant->email)
             ->with('is_new', $isNew);
     }
 

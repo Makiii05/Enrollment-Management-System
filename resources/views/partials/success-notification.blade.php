@@ -25,13 +25,25 @@
             </div>
             
             <!-- Status Info -->
-            <div class="bg-blue-50 rounded-lg p-4 mb-6 border border-blue-200">
+            <div class="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-200">
                 <p class="text-sm text-blue-800">
                     @if(session('is_new'))
                         <strong>New Application:</strong> Your application has been received and is now under review.
                     @else
                         <strong>Application Updated:</strong> Your application information has been successfully updated.
                     @endif
+                </p>
+            </div>
+
+            <!-- Email Confirmation -->
+            <div class="bg-green-50 rounded-lg p-4 mb-6 border border-green-200 flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+                <p class="text-sm text-green-800">
+                    A confirmation email has been sent to
+                    <strong>{{ session('applicant_email') }}</strong>.
+                    Please check your inbox (and spam folder) for the details.
                 </p>
             </div>
             
