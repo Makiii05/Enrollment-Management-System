@@ -20,8 +20,6 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('type');
             $table->string('role')->nullable();
-            $table->foreignId('department_id')->nullable()->constrained('departments')->onDelete('set null');
-            $table->foreignId('student_id')->nullable()->constrained('students')->onDelete('set null');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
@@ -30,6 +28,15 @@ return new class extends Migration
 
         // Create default users
         DB::table('users')->insert([
+            [
+                'name' => 'Administrator',
+                'email' => 'admin@gmail.com',
+                'type' => 'admin',
+                'password' => Hash::make('admin123'),
+                'email_verified_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
             [
                 'name' => 'Registrar',
                 'email' => 'registrar@gmail.com',
@@ -52,7 +59,7 @@ return new class extends Migration
                 'name' => 'Admissions',
                 'email' => 'admissions@gmail.com',
                 'type' => 'admissions',
-                'password' => Hash::make('admissions123'),
+                'password' => Hash::make('admission123'),
                 'email_verified_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),

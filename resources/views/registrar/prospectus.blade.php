@@ -37,6 +37,7 @@
                         <span class="label-text">Curriculum</span>
                     </label>
                     <select name="curriculum" id="addModalCurriculum" class="select select-bordered w-full">
+                        <option value="">--Select Curriculum--</option>
                         @foreach ($curricula as $curriculum)
                         <option value="{{ $curriculum->id }}" data-department-id="{{ $curriculum->department_id }}">{{ $curriculum->curriculum }} - {{$curriculum->department->description}}</option>
                         @endforeach
