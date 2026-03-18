@@ -13,13 +13,14 @@ use App\Models\AcademicTerm;
 use App\Models\StudentContact;
 use App\Models\StudentGuardian;
 use App\Models\StudentAcademicHistory;
+use App\Models\StudentAccount;
 
 class StudentController extends Controller
 {
     public function showStudent()
     {
-        // Don't load students on initial page load - they will be fetched via API search
-        return view('admission.student');
+        $students = Student::with(['department', 'program', 'level'])->orderBy('created_at', 'desc')->paginate(20);
+        return view('admission.student', compact('students'));
     }
 
     public function searchStudents(Request $request)
@@ -285,6 +286,12 @@ class StudentController extends Controller
                 'college_school_name' => $applicant->college_school_name,
                 'college_school_address' => $applicant->college_school_address,
                 'college_inclusive_years' => $applicant->college_inclusive_years,
+            ]);
+
+            // Create student account
+            StudentAccount::create([
+                'student_id' => $student->id,
+                'password' => Hash::make('123'),
             ]);
 
             return [

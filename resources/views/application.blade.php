@@ -68,11 +68,6 @@
                             @foreach ($levels as $level)
                             <option value="{{$level->description}}" data-program="{{$level->program->description}}" data-department="{{$level->program->department->description}}">{{$level->description}}</option>
                             @endforeach
-                            <option value="1st Year" data-program="College">1st Year</option>
-                            <option value="2nd Year" data-program="College">2nd Year</option>
-                            <option value="3rd Year" data-program="College">3rd Year</option>
-                            <option value="4th Year" data-program="College">4th Year</option>
-                            <option value="5th Year" data-program="College">5th Year</option>
                         </select>
                     </div>
                     <div class="form-control col-span-3">

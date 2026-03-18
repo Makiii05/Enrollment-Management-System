@@ -16,7 +16,7 @@ class ApplicantController extends Controller
 {
     //
     public function showApplication(){
-        $levels = Level::all();
+        $levels = Level::all()->unique('description');
         $strands =  Program::whereHas('department', function($query){
             $query->where('code', 'SHS');
         })->get();
@@ -157,8 +157,9 @@ class ApplicantController extends Controller
             });
         }
 
-        // Apply sorting
-        $query->orderBy($sortColumn, $sortDirection);
+        // Always show pending applicants first, then sort by applicant ID.
+        $query->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
+            ->orderBy('id', 'asc');
 
         // Paginate results
         $applicants = $query->paginate(20)->withQueryString();
@@ -328,7 +329,7 @@ class ApplicantController extends Controller
      * Ensure an admission record exists for the given applicant.
      * Creates one if it doesn't exist. Returns the Admission instance.
      */
-    public static function ensureAdmissionExists($applicantId)
+    public static function ensureAdmissionExists($applicantId, $scheduleId = null)
     {
         return Admission::firstOrCreate(
             ['applicant_id' => $applicantId],
@@ -336,6 +337,9 @@ class ApplicantController extends Controller
                 'interview_result' => 'pending',
                 'exam_result' => 'pending',
                 'decision' => 'pending',
+                'interview_schedule_id' => $scheduleId,
+                'exam_schedule_id' => $scheduleId,
+                'evaluation_schedule_id' => $scheduleId,
             ]
         );
     }
@@ -368,7 +372,7 @@ class ApplicantController extends Controller
 
         // Create admission records for all pending applicants first
         foreach($pendingApplicants as $applicantId){
-            self::ensureAdmissionExists($applicantId);
+            self::ensureAdmissionExists($applicantId, $scheduleId);
         }
         
         if ($action === 'markForInterview') {

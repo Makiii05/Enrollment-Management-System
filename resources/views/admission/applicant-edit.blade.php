@@ -43,11 +43,12 @@
                     <label class="label"><span class="label-text">Level</span></label>
                     <select name="level" class="select select-bordered">
                         <option value="">Select Level</option>
-                        @foreach($levels as $level)
-                        <option value="{{ $level->code }}" {{ old('level', $applicant->level) == $level->code ? 'selected' : '' }}>
-                            {{ $level->code }} - {{ $level->description }}
-                        </option>
-                        @endforeach
+                        <option value="Nursery" {{ old('level', $applicant->level) == 'Nursery' ? 'selected' : '' }}>Nursery</option>
+                        <option value="Kindergarten" {{ old('level', $applicant->level) == 'Kindergarten' ? 'selected' : '' }}>Kindergarten</option>
+                        <option value="Grade School" {{ old('level', $applicant->level) == 'Grade School' ? 'selected' : '' }}>Grade School</option>
+                        <option value="Junior High School" {{ old('level', $applicant->level) == 'Junior High School' ? 'selected' : '' }}>Junior High School</option>
+                        <option value="Senior High School" {{ old('level', $applicant->level) == 'Senior High School' ? 'selected' : '' }}>Senior High School</option>
+                        <option value="College" {{ old('level', $applicant->level) == 'College' ? 'selected' : '' }}>College</option>
                     </select>
                     @error('level')<span class="text-error text-sm">{{ $message }}</span>@enderror
                 </div>
@@ -168,10 +169,10 @@
                     <label class="label"><span class="label-text">Civil Status</span></label>
                     <select name="civil_status" class="select select-bordered">
                         <option value="">Select Civil Status</option>
-                        <option value="Single" {{ old('civil_status', $applicant->civil_status) == 'Single' ? 'selected' : '' }}>Single</option>
-                        <option value="Married" {{ old('civil_status', $applicant->civil_status) == 'Married' ? 'selected' : '' }}>Married</option>
-                        <option value="Widowed" {{ old('civil_status', $applicant->civil_status) == 'Widowed' ? 'selected' : '' }}>Widowed</option>
-                        <option value="Separated" {{ old('civil_status', $applicant->civil_status) == 'Separated' ? 'selected' : '' }}>Separated</option>
+                        <option value="single" {{ old('civil_status', $applicant->civil_status) == 'single' ? 'selected' : '' }}>Single</option>
+                        <option value="married" {{ old('civil_status', $applicant->civil_status) == 'married' ? 'selected' : '' }}>Married</option>
+                        <option value="widowed" {{ old('civil_status', $applicant->civil_status) == 'widowed' ? 'selected' : '' }}>Widowed</option>
+                        <option value="separated" {{ old('civil_status', $applicant->civil_status) == 'separated' ? 'selected' : '' }}>Separated</option>
                     </select>
                     @error('civil_status')<span class="text-error text-sm">{{ $message }}</span>@enderror
                 </div>
