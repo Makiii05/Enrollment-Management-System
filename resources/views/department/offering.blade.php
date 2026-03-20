@@ -375,7 +375,7 @@
             <td>${offering.code}</td>
             <td>${offering.description}</td>
             <td>${offering.subject?.unit ?? '-'}</td>
-            <td class="{{ $offering->enlistments->count() > $offering->class_size ? 'text-red-600' : 'text-green-600' }}">{{ $offering->enlistments->count() }}/{{ $offering->class_size }}</td>
+            <td class="text-green-600">0/40</td>
             <td><button type="button" class="btn btn-sm btn-ghost text-red-600 font-semibold" onclick="removeOffering(${offering.id})">Remove</button></td>
         `;
         tbody.prepend(row);
