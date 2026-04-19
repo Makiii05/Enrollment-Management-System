@@ -14,6 +14,7 @@ use App\Models\StudentContact;
 use App\Models\StudentGuardian;
 use App\Models\StudentAcademicHistory;
 use App\Models\StudentAccount;
+use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
