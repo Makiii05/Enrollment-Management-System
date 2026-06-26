@@ -42,11 +42,55 @@
                 </tr>
             </thead>
             <tbody id="studentTableBody">
-                <tr id="initialMessage">
-                    <td colspan="7" class="text-center text-gray-500 py-8">Enter a search term and click Search to find students.</td>
-                </tr>
+                @foreach ($students as $student)
+                    <tr>
+                        <td>{{ $student->student_number }}</td>
+                        <td>{{ $student->last_name }}, {{ $student->first_name }} {{ $student->middle_name ?? '' }}</td>
+                        <td>{{ $student->department->code ?? '-' }}</td>
+                        <td>{{ $student->program->code ?? '-' }}</td>
+                        <td>{{ $student->level->code ?? '-' }}</td>
+                        <td>{{ ucfirst($student->status) }}</td>
+                        <td>
+                            <div class="flex gap-1 flex-wrap">
+                                <button 
+                                    type="button" 
+                                    class="btn btn-xs btn-primary"
+                                    onclick='openStudentDetailModal({{ json_encode($student) }})'
+                                >
+                                    Details
+                                </button>
+                                <button 
+                                    type="button" 
+                                    class="btn btn-xs btn-info"
+                                    onclick='openStudentContactModal({{ json_encode($student->contact) }}, "{{ $student->student_number }}")'
+                                >
+                                    Contact
+                                </button>
+                                <button 
+                                    type="button" 
+                                    class="btn btn-xs btn-warning"
+                                    onclick='openStudentGuardianModal({{ json_encode($student->guardian) }}, "{{ $student->student_number }}")'
+                                >
+                                    Guardian
+                                </button>
+                                <button 
+                                    type="button" 
+                                    class="btn btn-xs btn-success"
+                                    onclick='openStudentAcademicHistoryModal({{ json_encode($student->academicHistory) }}, "{{ $student->student_number }}")'
+                                >
+                                    Academic History
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+
             </tbody>
         </table>
+    </div>
+    <!-- Pagination -->
+    <div class="p-4">
+        {{ $students->links() }}
     </div>
     </div>
 

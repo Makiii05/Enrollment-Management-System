@@ -38,25 +38,45 @@ class DashboardController extends Controller
             $q->where('academic_year', $selectedYear);
         })->count();
 
-        // Interviewee: anyone who went through interview (has result passed or failed)
-        $interviewCount = Admission::whereHas('applicant', function ($q) use ($selectedYear) {
-            $q->where('academic_year', $selectedYear);
-        })->whereIn('interview_result', ['passed', 'failed'])->count();
+        // // Interviewee: anyone who went through interview (has result passed or failed)
+        // $interviewCount = Admission::whereHas('applicant', function ($q) use ($selectedYear) {
+        //     $q->where('academic_year', $selectedYear);
+        // })->whereIn('interview_result', ['passed', 'failed'])->count();
 
-        // Examinee: anyone who went through exam (has result passed or failed)
-        $examCount = Admission::whereHas('applicant', function ($q) use ($selectedYear) {
-            $q->where('academic_year', $selectedYear);
-        })->whereIn('exam_result', ['passed', 'failed'])->count();
+        // // Examinee: anyone who went through exam (has result passed or failed)
+        // $examCount = Admission::whereHas('applicant', function ($q) use ($selectedYear) {
+        //     $q->where('academic_year', $selectedYear);
+        // })->whereIn('exam_result', ['passed', 'failed'])->count();
 
-        // Evaluatee: anyone who went through evaluation (decision accepted or rejected)
-        $evaluationCount = Admission::whereHas('applicant', function ($q) use ($selectedYear) {
-            $q->where('academic_year', $selectedYear);
-        })->whereIn('decision', ['accepted', 'rejected'])->count();
+        // // Evaluatee: anyone who went through evaluation (decision accepted or rejected)
+        // $evaluationCount = Admission::whereHas('applicant', function ($q) use ($selectedYear) {
+        //     $q->where('academic_year', $selectedYear);
+        // })->whereIn('decision', ['accepted', 'rejected'])->count();
 
-        // Admitted: decision = accepted
-        $admittedCount = Admission::whereHas('applicant', function ($q) use ($selectedYear) {
-            $q->where('academic_year', $selectedYear);
-        })->where('decision', 'accepted')->count();
+        // // Admitted: decision = accepted
+        // $admittedCount = Admission::whereHas('applicant', function ($q) use ($selectedYear) {
+        //     $q->where('academic_year', $selectedYear);
+        // })->where('decision', 'accepted')->count();
+
+        // interviewee: bse on apllicant status
+        $interviewCount = Applicant::where('academic_year', $selectedYear)
+            ->whereIn('status', ['interview'])
+            ->count();
+
+        // examinee: based on applicant status
+        $examCount = Applicant::where('academic_year', $selectedYear)
+            ->whereIn('status', ['exam'])
+            ->count();
+
+        // evaluationCount: based on applicant status
+        $evaluationCount = Applicant::where('academic_year', $selectedYear)
+            ->whereIn('status', ['evaluation'])
+            ->count();
+
+        // admitted: based on applicant status
+        $admittedCount = Applicant::where('academic_year', $selectedYear)
+            ->whereIn('status', ['admitted'])
+            ->count();
 
         $variance = $totalApplicants - $admittedCount;
 

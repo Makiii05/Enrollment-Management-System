@@ -92,7 +92,7 @@
                                 type="button" 
                                 class="btn btn-sm btn-ghost text-yellow-600"
                                 onclick="openFinalEvaluationModal({{ json_encode($applicant) }}, {{ json_encode($applicant->applicant) }})">
-                                Edit Decision/Department
+                                Edit Decision/Program
                             </button>
                         </td>
                     </tr>

@@ -14,9 +14,6 @@
 <body class="bg-gray-100 min-h-screen flex flex-col">
     <nav class="flex items-center justify-center navbar w-full bg-base-300 shadow">
         <div class="text-center space-y-2 m-3">
-            <h1 class="text-sm font-bold tracking-widest text-indigo-600 uppercase">
-                Official Portal
-            </h1>
             <h2 class="text-4xl font-extrabold text-slate-900 tracking-tight">
                 WELCOME TO <span class="text-indigo-600">{{ strtoupper(env('APP_NAME')) }}</span>
             </h2>

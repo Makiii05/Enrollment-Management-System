@@ -20,8 +20,6 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('type');
             $table->string('role')->nullable();
-            $table->foreignId('department_id')->nullable()->constrained('departments')->onDelete('set null');
-            $table->foreignId('student_id')->nullable()->constrained('students')->onDelete('set null');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
@@ -31,9 +29,20 @@ return new class extends Migration
         // Create default users
         DB::table('users')->insert([
             [
+                'name' => 'Administrator',
+                'email' => 'admin@gmail.com',
+                'type' => 'admin',
+                'role' => 'head',
+                'password' => Hash::make('admin123'),
+                'email_verified_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
                 'name' => 'Registrar',
                 'email' => 'registrar@gmail.com',
                 'type' => 'registrar',
+                'role' => 'head',
                 'password' => Hash::make('registrar123'),
                 'email_verified_at' => now(),
                 'created_at' => now(),
@@ -43,6 +52,7 @@ return new class extends Migration
                 'name' => 'Accounting',
                 'email' => 'accounting@gmail.com',
                 'type' => 'accounting',
+                'role' => 'head',
                 'password' => Hash::make('accounting123'),
                 'email_verified_at' => now(),
                 'created_at' => now(),
@@ -50,9 +60,10 @@ return new class extends Migration
             ],
             [
                 'name' => 'Admissions',
-                'email' => 'admissions@gmail.com',
-                'type' => 'admissions',
-                'password' => Hash::make('admissions123'),
+                'email' => 'admission@gmail.com',
+                'type' => 'admission',
+                'role' => 'head',
+                'password' => Hash::make('admission123'),
                 'email_verified_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),
